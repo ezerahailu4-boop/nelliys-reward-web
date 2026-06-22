@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String?        @unique
+  phone          String         @unique
+  password       String?
+  name           String
+  avatar         String?
+  role           Role           @default(CUSTOMER)
+  tier           Tier           @default(BRONZE)
+  points         Int            @default(0)
+  pointsExpiresAt DateTime?
+  totalSpent     Float          @default(0)
+  referralCode   String         @unique
+  referredBy     String?
+  birthday       DateTime?
+  language       String         @default("en")
+  isActive       Boolean        @default(true)
+  isVerified     Boolean        @default(false)
+  fcmToken       String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  employeeStats  EmployeeStats?
+  notifications  Notification[]
+  orders         Order[]
+  receipts       Receipt[]
+  reviews        Review[]
+  rewards        Reward[]
+  transactions   Transaction[]
+  referredByUser User?          @relation("Referral", fields: [referredBy], references: [id])
+  referrals      User[]         @relation("Referral")
+}
+
+model Branch {
+  id          String          @id @default(cuid())
+  name        String
+  address     String
+  phone       String
+  latitude    Float?
+  longitude   Float?
+  isActive    Boolean         @default(true)
+  qrCode      String          @unique
+  openingTime String
+  closingTime String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  employees   EmployeeStats[]
+  inventory   Inventory[]
+  orders      Order[]
+  receipts    Receipt[]
+}
+
+model EmployeeStats {
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  branchId       String
+  totalSales     Float        @default(0)
+  ordersHandled  Int          @default(0)
+  avgServiceTime Float        @default(0)
+  customerRating Float        @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  attendance     Attendance[]
+  branch         Branch       @relation(fields: [branchId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+}
+
+model Attendance {
+  id         String        @id @default(cuid())
+  employeeId String
+  date       DateTime      @db.Date
+  checkIn    DateTime
+  checkOut   DateTime?
+  status     String        @default("present")
+  createdAt  DateTime      @default(now())
+  employee   EmployeeStats @relation(fields: [employeeId], references: [id])
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  name          String
+  nameAm        String?
+  nameOr        String?
+  description   String
+  descriptionAm String?
+  descriptionOr String?
+  price         Float
+  image         String?
+  category      String
+  isAvailable   Boolean     @default(true)
+  isRewardItem  Boolean     @default(false)
+  rewardPoints  Int         @default(0)
+  bonusPoints   Int         @default(0)
+  stock         Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  inventory     Inventory[]
+  orderItems    OrderItem[]
+}
+
+model Inventory {
+  id                String   @id @default(cuid())
+  branchId          String
+  productId         String
+  quantity          Int      @default(0)
+  lowStockThreshold Int      @default(10)
+  updatedAt         DateTime @updatedAt
+  branch            Branch   @relation(fields: [branchId], references: [id])
+  product           Product  @relation(fields: [productId], references: [id])
+
+  @@unique([branchId, productId])
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  orderNumber    String      @unique
+  userId         String
+  branchId       String
+  status         OrderStatus @default(PENDING)
+  totalAmount    Float
+  pointsEarned   Int         @default(0)
+  pointsRedeemed Int         @default(0)
+  paymentMethod  String      @default("cash")
+  paymentStatus  String      @default("pending")
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  branch         Branch      @relation(fields: [branchId], references: [id])
+  user           User        @relation(fields: [userId], references: [id])
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Receipt {
+  id            String        @id @default(cuid())
+  receiptNumber String
+  userId        String
+  branchId      String
+  amount        Float
+  pointsEarned  Int
+  imageUrl      String?
+  imageHash     String?       @unique
+  ocrData       Json?
+  status        ReceiptStatus @default(PENDING)
+  fraudScore    Float         @default(0)
+  fraudReasons  String[]
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  branch        Branch        @relation(fields: [branchId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+}
+
+model ReceiptQrScan {
+  id            String   @id @default(cuid())
+  qrToken       String   @unique
+  scannedBy     String
+  receiptNumber String
+  branchId      String
+  amount        Float
+  pointsEarned  Int
+  createdAt     DateTime @default(now())
+}
+
+model Reward {
+  id          String       @id @default(cuid())
+  userId      String
+  rewardType  String
+  title       String
+  description String?
+  pointsCost  Int
+  value       Float
+  status      RewardStatus @default(ACTIVE)
+  expiresAt   DateTime?
+  redeemedAt  DateTime?
+  code        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  amount      Int
+  description String
+  reference   String?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String
+  multiplier  Float    @default(1)
+  discount    Float?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  targetTier  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  isSent    Boolean   @default(false)
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  orderId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  EMPLOYEE
+  MANAGER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Tier {
+  BRONZE
+  SILVER
+  GOLD
+  VIP
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum ReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum RewardStatus {
+  ACTIVE
+  REDEEMED
+  EXPIRED
+}

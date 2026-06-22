@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /api
+Disallow: /scan
+Disallow: /upload
+Disallow: /profile
+Disallow: /settings
+Disallow: /history
+Disallow: /referral
+Disallow: /order
+
+Sitemap: https://nelliyrewards.com/sitemap.xml

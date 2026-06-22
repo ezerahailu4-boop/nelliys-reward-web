@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# PWA generated files
+public/sw.js
+public/workbox-*.js
+public/sw.js.map
+public/workbox-*.js.map
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Misc
+.DS_Store
+*.log
+
+certificates

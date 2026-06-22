@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap&display=swap&font-display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 24 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 24 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 10% 10%;
+  --primary: 24 90% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 30 30% 96%;
+  --secondary-foreground: 24 10% 10%;
+  --muted: 30 20% 95%;
+  --muted-foreground: 24 10% 40%;
+  --accent: 40 90% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 30 20% 90%;
+  --input: 30 20% 90%;
+  --ring: 24 90% 50%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 24 20% 8%;
+  --foreground: 30 30% 95%;
+  --card: 24 15% 10%;
+  --card-foreground: 30 30% 95%;
+  --popover: 24 15% 10%;
+  --popover-foreground: 30 30% 95%;
+  --primary: 24 90% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 24 15% 15%;
+  --secondary-foreground: 30 30% 95%;
+  --muted: 24 15% 15%;
+  --muted-foreground: 30 20% 60%;
+  --accent: 40 90% 55%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 24 15% 20%;
+  --input: 24 15% 20%;
+  --ring: 24 90% 55%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+  input, textarea, select, button {
+    font-family: inherit;
+    /* Prevent iOS zoom on focus — keep font-size >= 16px */
+    font-size: max(16px, 1em);
+  }
+  /* Fix iOS input zoom — inputs must be at least 16px */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .break-words {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .text-shadow {
+    text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .glow-amber {
+    box-shadow: 0 0 40px rgba(245,158,11,0.25);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+
+.glass {
+  background: hsl(var(--card) / 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Page transition */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageIn 0.35s ease-out both;
+}
+
+/* Safe area for bottom nav */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Coffee steam animation */
+@keyframes steam {
+  0%   { transform: translateY(0) scaleX(1); opacity: 0.6; }
+  50%  { transform: translateY(-20px) scaleX(1.3); opacity: 0.3; }
+  100% { transform: translateY(-40px) scaleX(0.8); opacity: 0; }
+}
+.steam-1 { animation: steam 2.5s ease-out infinite; }
+.steam-2 { animation: steam 2.5s ease-out 0.8s infinite; }
+.steam-3 { animation: steam 2.5s ease-out 1.6s infinite; }
+
+/* Animated gradient border */
+@keyframes borderGlow {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+.border-glow {
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+/* Floating particles */
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+.particle { animation: floatUp linear infinite; }
+
+/* Pulse ring */
+@keyframes pulseRing {
+  0%   { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #fef3c7 25%, #fde68a 50%, #fef3c7 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 0.5rem;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+  background-size: 200% 100%;
+}
