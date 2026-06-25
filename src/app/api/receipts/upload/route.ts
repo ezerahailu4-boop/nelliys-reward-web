@@ -28,7 +28,7 @@ function parseAmount(text: string): number {
   }
   if (best) return best
 
-  const all = [...text.matchAll(/(\d+\.?\d*)/g)]
+ const all = Array.from(text.matchAll(/(\d+\.?\d*)/g))
     .map(m => parseFloat(m[1]))
     .filter(v => v >= 20 && v <= 100000)
   return all.length ? Math.max(...all) : 0
