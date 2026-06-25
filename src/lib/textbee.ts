@@ -1,27 +1,44 @@
-const TEXTBEE_API = 'https://api.textbee.dev/api/v1'
-const ALLOWED_HOST = 'api.textbee.dev'
-
-function safeTextbeeUrl(path: string): string {
-  const url = new URL(`${TEXTBEE_API}${path}`)
-  if (url.hostname !== ALLOWED_HOST) throw new Error('Invalid SMS API host')
-  return url.toString()
-}
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER
 
 export async function sendSMS(recipients: string | string[], message: string) {
-  const deviceId = process.env.TEXTBEE_DEVICE_ID
-  if (!deviceId) return { success: false, data: null }
-  const endpoint = safeTextbeeUrl(`/gateway/devices/${encodeURIComponent(deviceId)}/sendSms`)
-  const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'x-api-key': process.env.TEXTBEE_API_KEY!,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        recipients: Array.isArray(recipients) ? recipients : [recipients],
-        message,
-      }),
-    })
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+    console.error('Twilio credentials are not set')
+    return { success: false, data: null }
+  }
+
+  // Handle recipients: Twilio only allows one 'To' per request.
+  // If an array is provided, we'll use the first recipient and log a warning.
+  let recipient: string
+  if (Array.isArray(recipients)) {
+    if (recipients.length === 0) {
+      return { success: false, data: null }
+    }
+    recipient = recipients[0]
+    if (recipients.length > 1) {
+      console.warn('sendSMS: received an array of recipients, using the first one only.')
+    }
+  } else {
+    recipient = recipients
+  }
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
+  const body = new URLSearchParams()
+  body.set('To', recipient)
+  body.set('From', TWILIO_PHONE_NUMBER)
+  body.set('Body', message)
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      // Basic Auth: Base64 of AccountSID:AuthToken
+      Authorization: `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
+    },
+    body,
+  })
+
   const data = await response.json()
   return { success: response.ok, data }
 }
@@ -29,20 +46,20 @@ export async function sendSMS(recipients: string | string[], message: string) {
 // Pre-built messages for Nelliy Rewards
 export const smsTemplates = {
   welcome: (name: string, points: number) =>
-    `Welcome to Nelliy's Rewards, ${name}! ☕ You have ${points} points. Start earning more today!`,
+    `Welcome to Nelliy's Rewards, ${name}! 🐝 You have ${points} points. Start earning more today!`,
 
   pointsEarned: (points: number, total: number) =>
-    `Nelliy's Rewards: You earned ${points} points! Total: ${total} pts. Keep sipping! ☕`,
+    `Nelliy's Rewards: You earned ${points} points! Total: ${total} pts. Keep buzzing! 🐝`,
 
   rewardRedeemed: (reward: string) =>
-    `Nelliy's Rewards: Your "${reward}" has been redeemed! Enjoy ☕`,
+    `Nelliy's Rewards: Your "${reward}" has been redeemed! Enjoy 🐝`,
 
   tierUpgrade: (tier: string) =>
-    `Congrats! You've been upgraded to ${tier} tier at Nelliy's Rewards! 🎉`,
+    `Congrats! You've been upgraded to ${tier} tier at Nelliy's Rewards! 🐝🎉`,
 
   birthday: (name: string, points: number) =>
-    `Happy Birthday ${name}! 🎂 We added ${points} bonus points to your Nelliy's Rewards account!`,
+    `Happy Birthday ${name}! 🎂🐝 We added ${points} bonus points to your Nelliy's Rewards account!`,
 
   campaign: (message: string) =>
-    `Nelliy's Rewards: ${message}`,
-};
+    `Nelliy's Rewards: ${message} 🐝`,
+}
