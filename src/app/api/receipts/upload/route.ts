@@ -15,7 +15,7 @@ function parseAmount(text: string): number {
   const broadTotal = /(?:total|cash|grand\s*total|net\s*total|amount\s*due|balance\s*due|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb|ETB|birr)/i
 
   const getNum = (line: string) => {
-    const nums = [...line.matchAll(/(\d+\.?\d*)/g)].map(m => parseFloat(m[1])).filter(v => v > 0)
+    const nums = Array.from(line.matchAll(/(\d+\.?\d*)/g)).map(m => parseFloat(m[1])).filter(v => v > 0)
     return nums.length ? nums[nums.length - 1] : 0
   }
 
