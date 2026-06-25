@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
-import { sendSMS, smsTemplates } from '@/lib/textbee'
+import { sendSMS, smsTemplates } from '@/lib/twilio'
 
 export async function POST() {
   const { error, session } = await requireAuth()

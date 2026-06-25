@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendSMS, smsTemplates } from '@/lib/textbee'
+import { sendSMS, smsTemplates } from '@/lib/twilio'
 import { sendBirthdayEmail } from '@/lib/email'
 import { sendPushNotification } from '@/lib/firebase'
 import { BIRTHDAY_BONUS } from '@/lib/constants'

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { sendPushNotification } from '@/lib/firebase'
-import { sendSMS, smsTemplates } from '@/lib/textbee'
+import { sendSMS, smsTemplates } from '@/lib/twilio'
 import { sendTierUpgradeEmail } from '@/lib/email'
 import { TIER_EMOJI, TIER_BENEFITS, REFERRAL_BONUS } from '@/lib/constants'
 

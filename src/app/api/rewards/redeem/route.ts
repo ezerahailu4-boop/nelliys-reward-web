@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { z } from 'zod'
-import { sendSMS, smsTemplates } from '@/lib/textbee'
+import { sendSMS, smsTemplates } from '@/lib/twilio'
 import { sendRewardRedeemedEmail } from '@/lib/email'
 
 const catalog: Record<string, { title: string; pointsCost: number; value: number }> = {

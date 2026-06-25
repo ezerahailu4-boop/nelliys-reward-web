@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendSMS } from '@/lib/textbee'
+import { sendSMS } from '@/lib/twilio'
 import { rateLimit } from '@/lib/rateLimit'
 import { z } from 'zod'
 import { OTP_EXPIRY_MS, OTP_LENGTH } from '@/lib/constants'

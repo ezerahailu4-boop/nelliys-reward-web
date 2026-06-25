@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdminToken } from '@/lib/adminAuth'
-import { sendSMS } from '@/lib/textbee'
+import { sendSMS } from '@/lib/twilio'
 import { sendPushToMany } from '@/lib/firebase'
 import { z } from 'zod'
 

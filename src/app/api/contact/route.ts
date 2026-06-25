@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { sendSMS } from '@/lib/textbee'
+import { sendSMS } from '@/lib/twilio'
 
 const schema = z.object({
   name: z.string().min(2),

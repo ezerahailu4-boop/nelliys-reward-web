@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendSMS } from '@/lib/textbee'
+import { sendSMS } from '@/lib/twilio'
 import { sendPushNotification } from '@/lib/firebase'
 
 // Runs 1st of every month at 6am UTC
