@@ -41,6 +41,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import KnifeNavbar from '@/components/KnifeNavbar'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -243,8 +244,6 @@ const GOOGLE_REVIEW_URL = 'https://www.google.com/maps/place/Nelliy%27s+Coffee/@
 
 export default function HomePage() {
   const [lang, setLangState] = useState('en')
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const { theme, resolvedTheme, setTheme } = useTheme()
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const t = translations[lang as keyof typeof translations]
@@ -258,12 +257,6 @@ export default function HomePage() {
   useEffect(() => {
     const saved = localStorage.getItem('nelliy-lang')
     if (saved && translations[saved as keyof typeof translations]) setLangState(saved)
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
@@ -284,143 +277,11 @@ export default function HomePage() {
     }
   }, [])
 
-  const currentLangOption = LANG_OPTIONS.find(l => l.code === lang) || LANG_OPTIONS[0]
-
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <img src="/Nelliys Logo Coffee-01.png" alt="Nelliy's Coffee" className="h-12 lg:h-14 w-auto object-contain" />
-            </Link>
+      {/* Knife Navbar */}
+      <KnifeNavbar lang={lang} setLang={setLang} labels={{ howItWorks: t.howItWorks, tiers: t.tiers, contact: t.contact }} />
 
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-8">
-              <Link href="#how-it-works" className="text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-300 font-medium transition-colors">
-                {t.howItWorks}
-              </Link>
-              <Link href="#tiers" className="text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-300 font-medium transition-colors">
-                {t.tiers}
-              </Link>
-              <Link href="/leaderboard" className="text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-300 font-medium transition-colors flex items-center gap-1">
-                <Trophy className="w-3.5 h-3.5" /> Leaderboard
-              </Link>
-              <Link href="#rate-us" className="text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-300 font-medium transition-colors">
-                Rate Us
-              </Link>
-              <Link href="#contact" className="text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-300 font-medium transition-colors">
-                {t.contact}
-              </Link>
-            </nav>
-
-            {/* Right Side */}
-            <div className="flex items-center gap-3">
-              {/* Dark Mode Toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                className="text-amber-800 dark:text-amber-200 hover:text-amber-600 dark:hover:text-amber-300"
-                aria-label="Toggle dark mode"
-              >
-                <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              </Button>
-
-              {/* Language Selector */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-amber-800 dark:text-amber-200 hover:text-amber-600 gap-1.5">
-                    <span className="text-base leading-none">{currentLangOption.flag}</span>
-                    <span className="text-xs font-semibold">{currentLangOption.label}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[160px]">
-                  {LANG_OPTIONS.map(l => (
-                    <DropdownMenuItem key={l.code} onClick={() => setLang(l.code)}
-                      className={`gap-2 ${lang === l.code ? 'bg-amber-50 text-amber-700 font-semibold' : ''}`}>
-                      <span className="text-base">{l.flag}</span>
-                      <span>{l.label}</span>
-                      {lang === l.code && <span className="ml-auto text-amber-500">✓</span>}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Login Buttons */}
-              <div className="hidden lg:flex items-center gap-2">
-                <Link href="/login">
-                  <Button variant="ghost" className="text-amber-800 hover:text-amber-600">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg">
-                    Join Now
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Mobile Menu Button */}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="lg:hidden text-amber-900 dark:text-amber-200"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-card border-t border-amber-100 dark:border-zinc-700"
-            >
-              <div className="px-4 py-4 space-y-3">
-                <Link href="#how-it-works" className="block py-2 text-amber-800 dark:text-amber-200 font-medium">
-                  {t.howItWorks}
-                </Link>
-                <Link href="#tiers" className="block py-2 text-amber-800 dark:text-amber-200 font-medium">
-                  {t.tiers}
-                </Link>
-                <Link href="/leaderboard" className="block py-2 text-amber-800 dark:text-amber-200 font-medium">
-                  🏆 Leaderboard
-                </Link>
-                <Link href="#rate-us" className="block py-2 text-amber-800 dark:text-amber-200 font-medium">
-                  Rate Us
-                </Link>
-                <Link href="#contact" className="block py-2 text-amber-800 dark:text-amber-200 font-medium">
-                  {t.contact}
-                </Link>
-                <div className="pt-3 border-t border-amber-100 flex flex-col gap-2">
-                  <Link href="/login">
-                    <Button variant="outline" className="w-full border-amber-300 text-amber-800">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                      Join Now
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
