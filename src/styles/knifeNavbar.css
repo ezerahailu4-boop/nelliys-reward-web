@@ -492,3 +492,59 @@
   }
 }
 
+
+/* ---------------------------------------------------------------
+   Transparent (un-scrolled) state overrides.
+   The nav sits on top of a dark hero photo before scrolling, so
+   text needs to be light/white here instead of the dark amber
+   used once the white scrolled background appears.
+   --------------------------------------------------------------- */
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__brand-text {
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__link {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__link:hover {
+  color: #fde68a;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__icon-btn {
+  color: #ffffff;
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__lang-btn {
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__lang-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__signin {
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__signin:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Mobile hamburger icon also needs to read against the dark hero */
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__mobile-toggle {
+  color: #ffffff;
+}
+
+.knife-nav:not(.knife-nav--scrolled) .knife-nav__mobile-toggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
