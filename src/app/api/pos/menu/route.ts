@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const [products, branches] = await Promise.all([
     prisma.product.findMany({
       where: { isAvailable: true },
-      select: { id: true, name: true, category: true, price: true, rewardPoints: true },
+      select: { id: true, name: true, category: true, price: true, bonusPoints: true },
 
       orderBy: [{ category: 'asc' }, { name: 'asc' }],
     }),

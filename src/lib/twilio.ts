@@ -46,20 +46,20 @@ export async function sendSMS(recipients: string | string[], message: string) {
 // Pre-built messages for Nelliy Rewards
 export const smsTemplates = {
   welcome: (name: string, points: number) =>
-    `Welcome to Nelliy's Rewards, ${name}! 🐝 You have ${points} points. Start earning more today!`,
+    `Welcome to Nelliy's Rewards, ${name}! ☕ You have ${points} points. Start earning more today!`,
 
   pointsEarned: (points: number, total: number) =>
-    `Nelliy's Rewards: You earned ${points} points! Total: ${total} pts. Keep buzzing! 🐝`,
+    `Nelliy's Rewards: You earned ${points} points! Total: ${total} pts. Keep sipping! ☕`,
 
   rewardRedeemed: (reward: string) =>
-    `Nelliy's Rewards: Your "${reward}" has been redeemed! Enjoy 🐝`,
+    `Nelliy's Rewards: Your "${reward}" has been redeemed! Enjoy ☕`,
 
   tierUpgrade: (tier: string) =>
-    `Congrats! You've been upgraded to ${tier} tier at Nelliy's Rewards! 🐝🎉`,
+    `Congrats! You've been upgraded to ${tier} tier at Nelliy's Rewards! ☕🎉`,
 
   birthday: (name: string, points: number) =>
-    `Happy Birthday ${name}! 🎂🐝 We added ${points} bonus points to your Nelliy's Rewards account!`,
+    `Happy Birthday ${name}! 🎂☕ We added ${points} bonus points to your Nelliy's Rewards account!`,
 
   campaign: (message: string) =>
-    `Nelliy's Rewards: ${message} 🐝`,
+    `Nelliy's Rewards: ${message} ☕`,
 }

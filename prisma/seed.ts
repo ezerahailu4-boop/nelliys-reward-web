@@ -38,7 +38,7 @@ async function main() {
   console.log(`✅ Gazebo branch ready — QR code: ${branch.qrCode}`)
 
   // Admin user
-  const adminPassword = await bcrypt.hash('admin123', 12)
+  const adminPassword = await bcrypt.hash('adminezera', 12)
   const admin = await prisma.user.upsert({
     where: { phone: '+251900000000' },
     update: {},
