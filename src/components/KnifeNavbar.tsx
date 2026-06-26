@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X, Sun, Moon, ChevronDown, Trophy, Coffee } from 'lucide-react'
+import { Menu, X, Sun, Moon, ChevronDown, Trophy, Coffee, Star, Clock, Gift, User, LayoutDashboard, Home } from 'lucide-react'
 import '../styles/knifeNavbar.css'
 
 export interface KnifeLangOption {
@@ -61,19 +61,17 @@ export default function KnifeNavbar({
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname])
+  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   const currentLang = langOptions.find(l => l.code === lang) || langOptions[0]
 
   const navLinks = [
-    { href: '/#how-it-works', label: labels.howItWorks },
-    { href: '/#tiers', label: labels.tiers },
+    { href: '/',          label: 'Home',       icon: Home },
+    { href: '/dashboard', label: 'Dashboard',  icon: LayoutDashboard },
+    { href: '/rewards',   label: 'Rewards',    icon: Gift },
+    { href: '/history',   label: 'History',    icon: Clock },
     { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { href: '/#rate-us', label: 'Rate Us' },
-    { href: '/#contact', label: labels.contact },
+    { href: '/profile',   label: 'Profile',    icon: User },
   ]
 
   const handleSelectLang = (code: string) => {
@@ -82,32 +80,60 @@ export default function KnifeNavbar({
   }
 
   return (
-    <header className={`knife-nav ${scrolled ? 'knife-nav--scrolled' : ''}`}>
+    <header className={`knife-nav${scrolled ? ' knife-nav--scrolled' : ''}`}>
+      {/* Animated blade-edge accent */}
       <div className="knife-nav__blade-edge" aria-hidden="true" />
+
+      {/* 3-D knife shape behind the nav bar */}
+      <div className="knife-nav__knife-shape" aria-hidden="true">
+        <div className="knife-nav__knife-blade" />
+        <div className="knife-nav__knife-tip" />
+        <div className="knife-nav__knife-bolster" />
+        <div className="knife-nav__knife-handle">
+          <div className="knife-nav__knife-wood" />
+          <div className="knife-nav__knife-sheen" />
+          <span className="knife-nav__knife-rivet" />
+          <span className="knife-nav__knife-rivet" />
+          <div className="knife-nav__knife-medallion">
+            <Coffee size={12} color="#fffbe0" />
+            <span>NR</span>
+          </div>
+        </div>
+      </div>
+
       <div className="knife-nav__inner">
-        {/* Logo / medallion */}
+        {/* Logo */}
         <Link href="/" className="knife-nav__brand" aria-label="Nelliy's Coffee — Home">
           <span className="knife-nav__medallion">
             <Coffee className="knife-nav__medallion-icon" />
           </span>
-          <span className="knife-nav__brand-text">Nelliy&apos;s</span>
+          <span className="knife-nav__brand-text">
+            Nelliy&apos;s
+            <span className="knife-nav__brand-sub">Rewards</span>
+          </span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="knife-nav__links" aria-label="Primary">
           {navLinks.map(link => {
-  const Icon = link.icon;
-  return (
-    <Link key={link.href} href={link.href} className="knife-nav__link">
-      {Icon && <Icon className="knife-nav__link-icon" aria-hidden="true" />}
-      <span>{link.label}</span>
-      <span className="knife-nav__link-blade" aria-hidden="true" />
-    </Link>
-  );
-})}
+            const Icon = link.icon
+            const isActive = pathname === link.href
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`knife-nav__link${isActive ? ' knife-nav__link--active' : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <Icon className="knife-nav__link-icon" aria-hidden="true" />
+                <span>{link.label}</span>
+                <span className="knife-nav__link-blade" aria-hidden="true" />
+              </Link>
+            )
+          })}
         </nav>
 
-        {/* Right side controls */}
+        {/* Right actions */}
         <div className="knife-nav__actions">
           {/* Theme toggle */}
           <button
@@ -120,7 +146,7 @@ export default function KnifeNavbar({
             <Moon className="knife-nav__moon" />
           </button>
 
-          {/* Language dropdown */}
+          {/* Language */}
           <div className="knife-nav__lang">
             <button
               type="button"
@@ -147,7 +173,7 @@ export default function KnifeNavbar({
                     <li key={opt.code}>
                       <button
                         type="button"
-                        className={`knife-nav__lang-option ${opt.code === lang ? 'is-active' : ''}`}
+                        className={`knife-nav__lang-option${opt.code === lang ? ' is-active' : ''}`}
                         onClick={() => handleSelectLang(opt.code)}
                         role="option"
                         aria-selected={opt.code === lang}
@@ -162,14 +188,10 @@ export default function KnifeNavbar({
             </AnimatePresence>
           </div>
 
-          {/* Auth buttons */}
+          {/* Auth */}
           <div className="knife-nav__auth">
-            <Link href="/login" className="knife-nav__signin">
-              Sign In
-            </Link>
-            <Link href="/register" className="knife-nav__join">
-              Join Now
-            </Link>
+            <Link href="/login" className="knife-nav__signin">Sign In</Link>
+            <Link href="/register" className="knife-nav__join">Join Now</Link>
           </div>
 
           {/* Mobile toggle */}
@@ -196,14 +218,20 @@ export default function KnifeNavbar({
           >
             <nav className="knife-nav__mobile-links" aria-label="Mobile primary">
               {navLinks.map(link => {
-  const Icon = link.icon;
-  return (
-    <Link key={link.href} href={link.href} className="knife-nav__mobile-link" onClick={() => setMobileOpen(false)}>
-      {Icon && <Icon className="knife-nav__link-icon" aria-hidden="true" />}
-      {link.label}
-    </Link>
-  );
-})}
+                const Icon = link.icon
+                const isActive = pathname === link.href
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`knife-nav__mobile-link${isActive ? ' knife-nav__mobile-link--active' : ''}`}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon className="knife-nav__link-icon" aria-hidden="true" />
+                    {link.label}
+                  </Link>
+                )
+              })}
             </nav>
 
             <div className="knife-nav__mobile-lang">
@@ -211,7 +239,7 @@ export default function KnifeNavbar({
                 <button
                   key={opt.code}
                   type="button"
-                  className={`knife-nav__lang-option ${opt.code === lang ? 'is-active' : ''}`}
+                  className={`knife-nav__lang-option${opt.code === lang ? ' is-active' : ''}`}
                   onClick={() => handleSelectLang(opt.code)}
                 >
                   <span>{opt.flag}</span>
