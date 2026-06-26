@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
 import { Toaster } from 'sonner'
+import KnifeNavbar from '@/components/KnifeNavbar'
 
 export const metadata: Metadata = {
   title: {
@@ -12,9 +13,9 @@ export const metadata: Metadata = {
   },
   description: "Scan QR codes, earn points, and redeem free coffee at Nelliy's Coffee in Addis Ababa. Join 2000+ members earning rewards on every sip.",
   keywords: 'coffee, rewards, loyalty, Ethiopia, Addis Ababa, QR code, points, Nelliy, Gazebo, free coffee, loyalty program',
-  authors: [{ name: 'Nelliy\'s Coffee' }],
+  authors: [{ name: "Nelliy's Coffee" }],
   creator: 'Ezera Hailu',
-  publisher: 'Nelliy\'s Coffee',
+  publisher: "Nelliy's Coffee",
   icons: {
     icon: [
       { url: '/icons/icon-32.png', sizes: '32x32', type: 'image/png' },
@@ -81,7 +82,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <ReactQueryProvider>
-              {children}
+              <KnifeNavbar />
+              <main className="pt-[4.5rem] lg:pt-20">
+                {children}
+              </main>
               <Toaster
                 richColors
                 position="top-center"
