@@ -1,187 +1,230 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import '../styles/knifeNavbar.css';
-import '../styles/knifeNavbar.css'; // Import the CSS file
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTheme } from 'next-themes'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Menu, X, Sun, Moon, ChevronDown, Trophy, Coffee } from 'lucide-react'
+import './knifeNavbar.css'
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: string;
+export interface KnifeLangOption {
+  code: string
+  label: string
+  flag: string
+  rtl?: boolean
 }
 
-const navItems: NavItem[] = [
-  { href: '/', label: 'Home', icon: 'home' },
-  { href: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-  { href: '/rewards', label: 'Rewards', icon: 'gift' },
-  { href: '/history', label: 'History', icon: 'history' },
-  { href: '/profile', label: 'Profile', icon: 'user' },
-];
+export interface KnifeNavLabels {
+  howItWorks: string
+  tiers: string
+  contact: string
+}
 
-export default function KnifeNavbar() {
-  const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [woodType, setWoodType] = useState<'walnut' | 'maple' | 'rosewood'>('walnut');
-  const [bladeFinish, setBladeFinish] = useState<'standard' | 'damascus' | 'polished' | 'matte'>('standard');
+interface KnifeNavbarProps {
+  lang?: string
+  setLang?: (code: string) => void
+  langOptions?: KnifeLangOption[]
+  labels?: KnifeNavLabels
+}
 
-  // Detect system preference on mount
+const DEFAULT_LANG_OPTIONS: KnifeLangOption[] = [
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'am', label: 'አማርኛ', flag: '🇪🇹' },
+  { code: 'or', label: 'Afaan Oromo', flag: '🇪🇹' },
+  { code: 'ar', label: 'العربية', flag: '🇸🇦', rtl: true },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+]
+
+const DEFAULT_LABELS: KnifeNavLabels = {
+  howItWorks: 'How It Works',
+  tiers: 'Membership Tiers',
+  contact: 'Contact Us',
+}
+
+export default function KnifeNavbar({
+  lang = 'en',
+  setLang,
+  langOptions = DEFAULT_LANG_OPTIONS,
+  labels = DEFAULT_LABELS,
+}: KnifeNavbarProps) {
+  const pathname = usePathname()
+  const { resolvedTheme, setTheme } = useTheme()
+  const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [langMenuOpen, setLangMenuOpen] = useState(false)
+
   useEffect(() => {
-    const userPreference = window.matchMedia('(prefers-color-scheme: dark)');
-    if (userPreference.matches) {
-      setTheme('dark');
-    }
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
-    // Listen for changes
-    const listener = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light');
-    };
-    userPreference.addEventListener('change', listener);
-    return () => userPreference.removeEventListener('change', listener);
-  }, []);
-
-  // Example: Cycle through wood types on double click (for demo/dev)
-  // In production, you'd likely have a proper theme customizer UI
+  // Close mobile menu on route change
   useEffect(() => {
-    // This is just for demonstration - remove in production
-    const handleDoubleClick = (e: MouseEvent) => {
-      if (e.detail >= 2) { // Double click
-        const woodTypes = ['walnut', 'maple', 'rosewood'] as const;
-        const currentIndex = woodTypes.indexOf(woodType);
-        const nextIndex = (currentIndex + 1) % woodTypes.length;
-        setWoodType(woodTypes[nextIndex]);
+    setMobileOpen(false)
+  }, [pathname])
 
-        // Optional: Also cycle blade finish
-        const finishes = ['standard', 'damascus', 'polished', 'matte'] as const;
-        const finishIndex = finishes.indexOf(bladeFinish);
-        const nextFinishIndex = (finishIndex + 1) % finishes.length;
-        setBladeFinish(finishes[nextFinishIndex]);
-      }
-    };
+  const currentLang = langOptions.find(l => l.code === lang) || langOptions[0]
 
-    const navWrapper = document.querySelector<HTMLElement>('.knife-wrapper');
-    navWrapper?.addEventListener('dblclick', handleDoubleClick as EventListener);
-    return () => navWrapper?.removeEventListener('dblclick', handleDoubleClick as EventListener);
-  }, [woodType, bladeFinish]);
+  const navLinks = [
+    { href: '/#how-it-works', label: labels.howItWorks },
+    { href: '/#tiers', label: labels.tiers },
+    { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { href: '/#rate-us', label: 'Rate Us' },
+    { href: '/#contact', label: labels.contact },
+  ]
+
+  const handleSelectLang = (code: string) => {
+    setLang?.(code)
+    setLangMenuOpen(false)
+  }
 
   return (
-    <>
-      {/* ── Desktop knife navbar ── */}
-      <nav className="knife-nav" aria-label="Main navigation">
-        <div
-          className="knife-wrapper"
-          data-theme={theme}
-          data-wood-type={woodType}
-          data-blade-finish={bladeFinish}
-        >
-          {/* Blade with layered material realism */}
-          <div className="blade">
-            <div className="blade-shine-top" />
-            <div className="blade-shine-mid" />
-            <div className="blade-shadow-bottom" />
-            <div className="blade-engraving">Nelliy&apos;s Rewards — Est. 2024</div>
+    <header className={`knife-nav ${scrolled ? 'knife-nav--scrolled' : ''}`}>
+      <div className="knife-nav__blade-edge" aria-hidden="true" />
+      <div className="knife-nav__inner">
+        {/* Logo / medallion */}
+        <Link href="/" className="knife-nav__brand" aria-label="Nelliy's Coffee — Home">
+          <span className="knife-nav__medallion">
+            <Coffee className="knife-nav__medallion-icon" />
+          </span>
+          <span className="knife-nav__brand-text">Nelliy&apos;s</span>
+        </Link>
 
-            {/* Nav items inside blade */}
-            <div className="nav-items">
-              {/* Logo area */}
-              <div className="nav-logo">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="var(--knife-accent)" strokeWidth="1.5" strokeLinecap="round"
-                  strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 2c0 0-4 2-4 7s4 7 4 7 4-2 4-7-4-7-4-7z"/>
-                  <path d="M8 9H4M20 9h-4M12 16v4M9 20h6"/>
-                  <ellipse cx="12" cy="9" rx="2" ry="3"/>
-                </svg>
-                <span className="nav-logo-text">Nelliy</span>
-              </div>
-
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`nav-item${isActive ? ' active' : ''}`}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    <i className={`ti ti-${item.icon}`} aria-hidden="true" />
-                    <span className="nav-label">{item.label}</span>
-                    {isActive && <span className="active-line" />}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Cutting edge with micro-details */}
-          <div className="cutting-edge">
-            <div className="cutting-edge-shine" />
-          </div>
-
-          {/* Blade tip with dynamic reflection */}
-          <div className="tip-wrap">
-            <div className="tip-shape">
-              <div className="tip-reflection" />
-            </div>
-          </div>
-
-          {/* Bolster with engraved details */}
-          <div className="bolster">
-            <div className="bolster-shine" />
-            <div className="bolster-engraving">NR</div>
-          </div>
-
-          {/* Handle with premium wood texture */}
-          <div className="handle">
-            <div className="wood-grain">
-              <div className="wood-grain-detail" />
-            </div>
-            <div className="handle-sheen" />
-            <div className="handle-shadow" />
-            <div className="handle-content">
-              <span className="rivet" />
-              <span className="rivet" />
-              <div className="medallion">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="#fffbe0" strokeWidth="1.5" strokeLinecap="round"
-                  strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 2c0 0-4 2-4 7s4 7 4 7 4-2 4-7-4-7-4-7z"/>
-                  <path d="M8 9H4M20 9h-4M12 16v4M9 20h6"/>
-                  <ellipse cx="12" cy="9" rx="2" ry="3"/>
-                </svg>
-                <span className="medallion-text">NR</span>
-                <div className="medallion-shine" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* ── Mobile bottom bar ── */}
-      <nav className="mobile-nav" aria-label="Mobile navigation" role="navigation">
-        <div className="mobile-top-line" />
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`mob-item${isActive ? ' active' : ''}`}
-              aria-current={isActive ? 'page' : undefined}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {isActive && <span className="mob-dot" />}
-              <i className={`ti ti-${item.icon}`} aria-hidden="true" />
-              <span className="mob-label">{item.label}</span>
+        {/* Desktop nav */}
+        <nav className="knife-nav__links" aria-label="Primary">
+          {navLinks.map(link => (
+            <Link key={link.href} href={link.href} className="knife-nav__link">
+              {link.icon ? <link.icon className="knife-nav__link-icon" aria-hidden="true" /> : null}
+              <span>{link.label}</span>
+              <span className="knife-nav__link-blade" aria-hidden="true" />
             </Link>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
 
-      {/* Skip link for screen readers */}
-      <a href="#main-content" className="skip-link">Skip to main content</a>
-    </>
-  );
+        {/* Right side controls */}
+        <div className="knife-nav__actions">
+          {/* Theme toggle */}
+          <button
+            type="button"
+            className="knife-nav__icon-btn"
+            aria-label="Toggle dark mode"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          >
+            <Sun className="knife-nav__sun" />
+            <Moon className="knife-nav__moon" />
+          </button>
+
+          {/* Language dropdown */}
+          <div className="knife-nav__lang">
+            <button
+              type="button"
+              className="knife-nav__lang-btn"
+              onClick={() => setLangMenuOpen(o => !o)}
+              aria-haspopup="listbox"
+              aria-expanded={langMenuOpen}
+            >
+              <span className="knife-nav__lang-flag">{currentLang.flag}</span>
+              <span className="knife-nav__lang-label">{currentLang.label}</span>
+              <ChevronDown className="knife-nav__lang-chevron" />
+            </button>
+            <AnimatePresence>
+              {langMenuOpen && (
+                <motion.ul
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15 }}
+                  className="knife-nav__lang-menu"
+                  role="listbox"
+                >
+                  {langOptions.map(opt => (
+                    <li key={opt.code}>
+                      <button
+                        type="button"
+                        className={`knife-nav__lang-option ${opt.code === lang ? 'is-active' : ''}`}
+                        onClick={() => handleSelectLang(opt.code)}
+                        role="option"
+                        aria-selected={opt.code === lang}
+                      >
+                        <span>{opt.flag}</span>
+                        <span>{opt.label}</span>
+                      </button>
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Auth buttons */}
+          <div className="knife-nav__auth">
+            <Link href="/login" className="knife-nav__signin">
+              Sign In
+            </Link>
+            <Link href="/register" className="knife-nav__join">
+              Join Now
+            </Link>
+          </div>
+
+          {/* Mobile toggle */}
+          <button
+            type="button"
+            className="knife-nav__icon-btn knife-nav__mobile-toggle"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileOpen(o => !o)}
+          >
+            {mobileOpen ? <X /> : <Menu />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile panel */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="knife-nav__mobile-panel"
+          >
+            <nav className="knife-nav__mobile-links" aria-label="Mobile primary">
+              {navLinks.map(link => (
+                <Link key={link.href} href={link.href} className="knife-nav__mobile-link" onClick={() => setMobileOpen(false)}>
+                  {link.icon ? <link.icon className="knife-nav__link-icon" aria-hidden="true" /> : null}
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="knife-nav__mobile-lang">
+              {langOptions.map(opt => (
+                <button
+                  key={opt.code}
+                  type="button"
+                  className={`knife-nav__lang-option ${opt.code === lang ? 'is-active' : ''}`}
+                  onClick={() => handleSelectLang(opt.code)}
+                >
+                  <span>{opt.flag}</span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="knife-nav__mobile-auth">
+              <Link href="/login" className="knife-nav__signin knife-nav__signin--block" onClick={() => setMobileOpen(false)}>
+                Sign In
+              </Link>
+              <Link href="/register" className="knife-nav__join knife-nav__join--block" onClick={() => setMobileOpen(false)}>
+                Join Now
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  )
 }
