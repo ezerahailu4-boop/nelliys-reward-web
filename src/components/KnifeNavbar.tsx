@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X, Sun, Moon, ChevronDown, Trophy, Coffee } from 'lucide-react'
-import './knifeNavbar.css'
+import '../styles/knifeNavbar.css'
 
 export interface KnifeLangOption {
   code: string
