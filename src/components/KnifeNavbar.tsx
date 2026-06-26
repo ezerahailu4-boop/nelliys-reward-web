@@ -61,9 +61,9 @@ export default function KnifeNavbar() {
       }
     };
 
-    const navWrapper = document.querySelector('.knife-wrapper');
-    navWrapper?.addEventListener('dblclick', handleDoubleClick);
-    return () => navWrapper?.removeEventListener('dblclick', handleDoubleClick);
+    const navWrapper = document.querySelector<HTMLElement>('.knife-wrapper');
+    navWrapper?.addEventListener('dblclick', handleDoubleClick as EventListener);
+    return () => navWrapper?.removeEventListener('dblclick', handleDoubleClick as EventListener);
   }, [woodType, bladeFinish]);
 
   return (
