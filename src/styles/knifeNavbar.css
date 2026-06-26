@@ -1,21 +1,24 @@
-.knife-nav {
+﻿.knife-nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 60;
-  background: transparent;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(12, 8, 5, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .knife-nav--scrolled {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 4px 24px rgba(120, 53, 15, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(120, 53, 15, 0.12);
 }
 
 :root[class~='dark'] .knife-nav--scrolled {
-  background: rgba(12, 10, 9, 0.92);
+  background: rgba(12, 10, 9, 0.96);
 }
 
 /* Blade-edge accent line under the nav */
@@ -89,6 +92,11 @@
   font-weight: 800;
   font-size: 1.15rem;
   letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.95);
+  transition: color 0.3s ease;
+}
+
+.knife-nav--scrolled .knife-nav__brand-text {
   color: #78350f;
 }
 
@@ -119,22 +127,35 @@
   padding: 0.5rem 0.9rem;
   font-size: 0.92rem;
   font-weight: 600;
-  color: #92400e;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   border-radius: 0.6rem;
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 :root[class~='dark'] .knife-nav__link {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.knife-nav--scrolled .knife-nav__link {
+  color: #92400e;
+}
+
+:root[class~='dark'] .knife-nav--scrolled .knife-nav__link {
   color: #fcd34d;
 }
 
 .knife-nav__link:hover {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.knife-nav--scrolled .knife-nav__link:hover {
   color: #b45309;
   background: rgba(245, 158, 11, 0.1);
 }
 
-:root[class~='dark'] .knife-nav__link:hover {
+:root[class~='dark'] .knife-nav--scrolled .knife-nav__link:hover {
   color: #fde68a;
   background: rgba(245, 158, 11, 0.12);
 }
@@ -181,8 +202,12 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #92400e;
+  color: rgba(255, 255, 255, 0.9);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.knife-nav--scrolled .knife-nav__icon-btn {
+  color: #92400e;
 }
 
 :root[class~='dark'] .knife-nav__icon-btn {
@@ -190,7 +215,7 @@
 }
 
 .knife-nav__icon-btn:hover {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.2);
 }
 
 .knife-nav__icon-btn svg {
@@ -240,9 +265,14 @@
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
-  color: #92400e;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 0.82rem;
   font-weight: 600;
+  transition: color 0.3s ease, background-color 0.2s ease;
+}
+
+.knife-nav--scrolled .knife-nav__lang-btn {
+  color: #92400e;
 }
 
 :root[class~='dark'] .knife-nav__lang-btn {
@@ -250,7 +280,7 @@
 }
 
 .knife-nav__lang-btn:hover {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.15);
 }
 
 .knife-nav__lang-flag {
@@ -329,10 +359,14 @@
   padding: 0.5rem 0.9rem;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #92400e;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   border-radius: 0.6rem;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.3s ease;
+}
+
+.knife-nav--scrolled .knife-nav__signin {
+  color: #92400e;
 }
 
 :root[class~='dark'] .knife-nav__signin {
@@ -340,7 +374,7 @@
 }
 
 .knife-nav__signin:hover {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.15);
 }
 
 .knife-nav__join {
@@ -444,3 +478,4 @@
     transition: none !important;
   }
 }
+
