@@ -11,10 +11,18 @@ import '../styles/knifeNavbar.css'
 export interface KnifeLangOption {
   code: string; label: string; flag: string; rtl?: boolean
 }
+
+export interface KnifeNavLabels {
+  howItWorks: string
+  tiers: string
+  contact: string
+}
+
 interface KnifeNavbarProps {
   lang?: string
   setLang?: (code: string) => void
   langOptions?: KnifeLangOption[]
+  labels?: KnifeNavLabels
 }
 
 const DEFAULT_LANGS: KnifeLangOption[] = [
@@ -34,12 +42,17 @@ const NAV_LINKS = [
   { href: '/profile',     label: 'Profile',     Icon: User },
 ]
 
-export default function KnifeNavbar({ lang = 'en', setLang, langOptions = DEFAULT_LANGS }: KnifeNavbarProps) {
+export default function KnifeNavbar({
+  lang = 'en',
+  setLang,
+  langOptions = DEFAULT_LANGS,
+  labels,
+}: KnifeNavbarProps) {
   const pathname   = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
-  const [scrolled,    setScrolled]    = useState(false)
-  const [mobileOpen,  setMobileOpen]  = useState(false)
-  const [langOpen,    setLangOpen]    = useState(false)
+  const [scrolled,   setScrolled]   = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [langOpen,   setLangOpen]   = useState(false)
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24)
@@ -52,10 +65,9 @@ export default function KnifeNavbar({ lang = 'en', setLang, langOptions = DEFAUL
 
   return (
     <>
-      {/* ══════ DESKTOP KNIFE ══════ */}
       <header className={`knav${scrolled ? ' knav--scrolled' : ''}`} aria-label="Site navigation">
 
-        {/* Actual knife SVG shape — the whole header is knife-shaped */}
+        {/* 3-D knife scene */}
         <div className="knav__scene" aria-hidden="true">
           <div className="knav__blade">
             <div className="knav__blade-shine-1" />
@@ -80,9 +92,8 @@ export default function KnifeNavbar({ lang = 'en', setLang, langOptions = DEFAUL
           <div className="knav__cutting-edge" />
         </div>
 
-        {/* Nav content sits on top of the knife */}
+        {/* Nav content */}
         <div className="knav__content">
-          {/* Brand */}
           <Link href="/" className="knav__brand" aria-label="Nelliy's Rewards home">
             <span className="knav__logo-ring">
               <Coffee size={18} color="#fff" />
@@ -92,12 +103,13 @@ export default function KnifeNavbar({ lang = 'en', setLang, langOptions = DEFAUL
             </span>
           </Link>
 
-          {/* Desktop links */}
           <nav className="knav__links" aria-label="Primary">
             {NAV_LINKS.map(({ href, label, Icon }) => {
               const active = pathname === href
               return (
-                <Link key={href} href={href} className={`knav__link${active ? ' knav__link--active' : ''}`} aria-current={active ? 'page' : undefined}>
+                <Link key={href} href={href}
+                  className={`knav__link${active ? ' knav__link--active' : ''}`}
+                  aria-current={active ? 'page' : undefined}>
                   <Icon size={14} aria-hidden="true" />
                   <span>{label}</span>
                   <span className="knav__underline" aria-hidden="true" />
@@ -106,16 +118,13 @@ export default function KnifeNavbar({ lang = 'en', setLang, langOptions = DEFAUL
             })}
           </nav>
 
-          {/* Right controls */}
           <div className="knav__actions">
-            {/* Theme */}
             <button type="button" className="knav__icon-btn" aria-label="Toggle theme"
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
               <Sun className="knav__sun" size={16} />
               <Moon className="knav__moon" size={16} />
             </button>
 
-            {/* Language */}
             <div className="knav__lang-wrap">
               <button type="button" className="knav__lang-btn"
                 onClick={() => setLangOpen(o => !o)}
@@ -144,13 +153,11 @@ export default function KnifeNavbar({ lang = 'en', setLang, langOptions = DEFAUL
               </AnimatePresence>
             </div>
 
-            {/* Auth */}
             <div className="knav__auth">
               <Link href="/login"    className="knav__signin">Sign In</Link>
               <Link href="/register" className="knav__join">Join Now</Link>
             </div>
 
-            {/* Mobile hamburger */}
             <button type="button" className="knav__icon-btn knav__hamburger"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               onClick={() => setMobileOpen(o => !o)}>
