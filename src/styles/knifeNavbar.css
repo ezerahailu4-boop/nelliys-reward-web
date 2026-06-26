@@ -1,143 +1,135 @@
 /* ═══════════════════════════════════════════════════
    KNIFE NAVBAR  —  Nelliy's Rewards
-   The whole nav is shaped like a chef's knife:
-   blade (left) → tip → bolster → handle (right)
+   Floating knife shape — NO background box behind it
 ═══════════════════════════════════════════════════ */
 
-/* ── Wrapper ── */
+/* ── Outer wrapper — fully transparent, no bg ── */
 .knav {
   position: fixed;
-  top: 16px; left: 50%; transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 1200px;
-  height: 72px;
+  top: 20px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 1180px;
+  height: 68px;
   z-index: 60;
-  /* No background here — the knife shape provides it */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ══════════════════════════════════════════
-   KNIFE SCENE  (the 3-D knife visual)
-   Absolutely positioned behind content
+   KNIFE SCENE  — the actual visual shape
+   clip-path makes the whole thing knife-shaped
 ══════════════════════════════════════════ */
 .knav__scene {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border-radius: 4px 36px 36px 4px;
-  overflow: visible;
-  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.45)) drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+  /* clip the outer wrapper to knife shape */
+  clip-path: polygon(
+    0% 100%,        /* bottom-left (handle end rounded via border-radius on children) */
+    0% 0%,          /* top-left */
+    82% 0%,         /* top, before tip */
+    88% 0%,         /* tip start top */
+    100% 50%,       /* tip point */
+    88% 100%,       /* tip end bottom */
+    82% 100%        /* bottom, after tip */
+  );
+  filter: drop-shadow(0 10px 40px rgba(0,0,0,0.5)) drop-shadow(0 2px 8px rgba(0,0,0,0.35));
 }
 
-/* ── Blade (cream/steel) ── */
+/* ── Blade (cream/steel) fills most of the knife ── */
 .knav__blade {
   position: absolute;
   left: 0; top: 0;
-  width: calc(100% - 210px);
+  width: calc(100% - 195px);
   height: 100%;
   background: linear-gradient(175deg,
     #ffffff 0%,
-    #f5f1e8 8%,
-    #ede6d8 20%,
-    #ddd4c4 34%,
-    #e8e0d0 48%,
-    #f2ece0 58%,
-    #dfd8c8 72%,
-    #ccc4b2 86%,
+    #f6f2ea 7%,
+    #ede6d8 18%,
+    #ddd5c4 32%,
+    #e8e1d2 46%,
+    #f2ece0 56%,
+    #dfd8c8 70%,
+    #ccc4b2 84%,
     #b8b0a0 100%
   );
-  border-radius: 4px 0 0 36px / 4px 0 0 36px;
-  border-top: 1.5px solid #ddd6c8;
-  border-left: 1.5px solid #d4ccbc;
-  border-bottom: 2px solid #a09080;
+  border-radius: 4px 0 0 32px / 4px 0 0 32px;
   overflow: hidden;
 }
 
 .knav__blade-shine-1 {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 35%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.05) 100%);
+  top: 0; left: 0; right: 0; height: 32%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.04) 100%);
 }
 
 .knav__blade-shine-2 {
   position: absolute;
-  top: 42%; left: 15%;
-  width: 50%; height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  top: 44%; left: 14%; width: 48%; height: 2.5px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.92), transparent);
   border-radius: 3px;
 }
 
 .knav__blade-engraving {
   position: absolute;
-  bottom: 8px; left: 160px;
-  font-size: 8px;
-  letter-spacing: 3.5px;
-  color: rgba(80,58,20,0.28);
-  text-transform: uppercase;
-  font-style: italic;
-  font-family: Georgia, serif;
-  white-space: nowrap;
+  bottom: 7px; left: 155px;
+  font-size: 7.5px; letter-spacing: 3.5px;
+  color: rgba(80,55,18,0.25);
+  text-transform: uppercase; font-style: italic;
+  font-family: Georgia, serif; white-space: nowrap;
+  pointer-events: none;
 }
 
-/* ── Blade tip ── */
+/* ── Tip (pointed right side of blade) ── */
 .knav__tip {
   position: absolute;
-  right: 206px; top: 0;
+  right: 191px; top: 0;
   width: 0; height: 0;
-  border-bottom: 72px solid #ddd4c4;
-  border-right: 56px solid transparent;
-  filter: drop-shadow(1px 0 0 rgba(0,0,0,0.08));
+  border-bottom: 68px solid #ddd5c4;
+  border-right: 52px solid transparent;
 }
 
-/* ── Bolster (the metal collar) ── */
+/* ── Bolster ── */
 .knav__bolster {
   position: absolute;
-  right: 202px; top: -2px;
-  width: 24px; height: 76px;
+  right: 187px; top: -1px;
+  width: 22px; height: 70px;
   background: linear-gradient(90deg,
-    #7a7268 0%,
-    #a8a098 12%,
-    #ccc8c0 25%,
-    #e8e4dc 40%,
-    #f4f0e8 50%,
-    #e8e4dc 60%,
-    #ccc8c0 75%,
-    #a8a098 88%,
-    #7a7268 100%
+    #706860 0%, #a09890 12%,
+    #ccc8c0 26%, #e8e4dc 42%,
+    #f4f0e8 50%, #e8e4dc 58%,
+    #ccc8c0 74%, #a09890 88%,
+    #706860 100%
   );
-  border-radius: 2px;
+  border-radius: 1px;
   border-top: 1px solid #c0b8b0;
-  border-bottom: 2px solid #585048;
+  border-bottom: 2px solid #504840;
   z-index: 2;
 }
 
 .knav__bolster-shine {
   position: absolute;
-  top: 8px; left: 6px;
-  width: 5px; height: 52%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+  top: 7px; left: 5px;
+  width: 4px; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.62), transparent);
   border-radius: 3px;
 }
 
-/* ── Handle (dark walnut wood) ── */
+/* ── Handle (walnut wood) ── */
 .knav__handle {
   position: absolute;
-  right: 0; top: -2px;
-  width: 210px; height: 76px;
-  border-radius: 4px 36px 36px 4px;
+  right: 0; top: -1px;
+  width: 195px; height: 70px;
+  border-radius: 3px 28px 28px 3px;
   background: linear-gradient(135deg,
-    #8a5028 0%,
-    #6a3818 14%,
-    #4a2810 28%,
-    #381e08 42%,
-    #4e2c14 56%,
-    #6a3c20 70%,
-    #8a4e28 86%,
-    #784020 100%
+    #8a5028 0%, #6a3818 13%,
+    #4a2810 27%, #381e08 40%,
+    #4e2c14 54%, #6a3c20 68%,
+    #8a4e28 84%, #784020 100%
   );
   border-top: 1px solid #9a5a30;
   border-bottom: 3px solid #180c04;
-  border-right: 1px solid #5a3010;
   overflow: hidden;
   z-index: 1;
 }
@@ -151,44 +143,41 @@
     transparent 7px, transparent 13px,
     rgba(255,255,255,0.04) 13px, rgba(255,255,255,0.04) 14px
   );
-  border-radius: 4px 36px 36px 4px;
+  border-radius: 3px 28px 28px 3px;
 }
 
 .knav__handle-sheen {
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 35%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
-  border-radius: 0 34px 0 0;
+  position: absolute; top: 0; left: 0; right: 0; height: 33%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.11) 0%, transparent 100%);
+  border-radius: 0 26px 0 0;
 }
 
 .knav__handle-shadow {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 30%;
-  background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 100%);
+  position: absolute; bottom: 0; left: 0; right: 0; height: 28%;
+  background: linear-gradient(0deg, rgba(0,0,0,0.32) 0%, transparent 100%);
 }
 
 .knav__handle-row {
   position: absolute; inset: 0;
   display: flex; align-items: center;
   justify-content: flex-end;
-  padding-right: 18px; gap: 12px; z-index: 2;
+  padding-right: 16px; gap: 11px; z-index: 2;
 }
 
 .knav__rivet {
-  width: 13px; height: 13px; border-radius: 50%;
+  width: 12px; height: 12px; border-radius: 50%;
   background: radial-gradient(circle at 33% 28%, #f0ddb0, #c09040 45%, #7a5020 75%, #482e10);
-  border: 1px solid #3a2010;
-  flex-shrink: 0; display: block;
+  border: 1px solid #3a2010; flex-shrink: 0; display: block;
 }
 
 .knav__medallion {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 38px; height: 38px; border-radius: 50%;
   background: radial-gradient(circle at 36% 32%, #f8e898, #d4a030 40%, #a07020 65%, #604010);
   border: 2px solid #4a3010;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 2px; flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.18);
 }
 
 .knav__medallion span {
@@ -200,25 +189,23 @@
 .knav__cutting-edge {
   position: absolute;
   left: 0; bottom: 0;
-  width: calc(100% - 210px);
-  height: 4px;
+  width: calc(100% - 195px); height: 4px;
   background: linear-gradient(90deg,
-    #cec6b4 0%, #f0ece2 15%,
-    #ffffff 28%, #e8e2d6 48%,
-    #d0c8b8 68%, #b0a898 88%, transparent 100%
+    #cec6b4 0%, #f0ece2 14%,
+    #ffffff 26%, #e8e2d6 46%,
+    #d0c8b8 66%, #b0a898 86%, transparent 100%
   );
   z-index: 3;
 }
 
 /* ══════════════════════════════════════
-   CONTENT (sits above the knife shape)
+   CONTENT layer — sits above the knife
 ══════════════════════════════════════ */
 .knav__content {
   position: relative; z-index: 4;
   height: 100%;
   display: flex; align-items: center;
-  padding: 0 12px 0 16px;
-  gap: 8px;
+  padding: 0 14px 0 16px; gap: 8px;
 }
 
 /* ── Brand ── */
@@ -231,7 +218,7 @@
   width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  box-shadow: 0 2px 10px rgba(217,119,6,0.5), inset 0 1px 1px rgba(255,255,255,0.35);
+  box-shadow: 0 2px 12px rgba(217,119,6,0.55), inset 0 1px 1px rgba(255,255,255,0.35);
   flex-shrink: 0;
   transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
@@ -249,14 +236,15 @@
 
 /* ── Desktop links ── */
 .knav__links {
-  display: none; align-items: center; gap: 2px; flex: 1; justify-content: center;
+  display: none; align-items: center; gap: 2px;
+  flex: 1; justify-content: center;
 }
 @media (min-width: 1024px) { .knav__links { display: flex; } }
 
 .knav__link {
   position: relative;
   display: flex; align-items: center; gap: 5px;
-  padding: 6px 12px; font-size: 0.855rem; font-weight: 600;
+  padding: 6px 11px; font-size: 0.855rem; font-weight: 600;
   color: #5a3a10; text-decoration: none; border-radius: 8px;
   transition: color 0.18s, background 0.18s; outline: none;
 }
@@ -265,7 +253,7 @@
 .knav__link--active { color: #92400e !important; background: rgba(180,83,9,0.13) !important; }
 
 .knav__underline {
-  position: absolute; left: 12px; right: 12px; bottom: 3px;
+  position: absolute; left: 11px; right: 11px; bottom: 3px;
   height: 2px;
   background: linear-gradient(90deg, #d97706, #f97316);
   transform: scaleX(0); transform-origin: left;
@@ -276,7 +264,7 @@
 
 /* ── Actions ── */
 .knav__actions {
-  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
 }
 
 .knav__icon-btn {
@@ -303,9 +291,8 @@
 .knav__lang-btn {
   display: flex; align-items: center; gap: 5px;
   padding: 6px 10px; border-radius: 8px;
-  border: 1px solid transparent; background: transparent;
-  cursor: pointer; color: #5a3a10;
-  font-size: 0.8rem; font-weight: 600;
+  border: none; background: transparent; cursor: pointer;
+  color: #5a3a10; font-size: 0.8rem; font-weight: 600;
   transition: background 0.18s;
 }
 .knav__lang-btn:hover { background: rgba(180,83,9,0.1); }
@@ -315,8 +302,7 @@
 .knav__lang-menu {
   position: absolute; top: calc(100% + 8px); right: 0;
   min-width: 160px; background: #fffbf4;
-  border: 1px solid rgba(180,83,9,0.2);
-  border-radius: 12px;
+  border: 1px solid rgba(180,83,9,0.2); border-radius: 12px;
   box-shadow: 0 12px 30px rgba(120,53,15,0.2);
   padding: 6px; list-style: none; margin: 0; z-index: 80;
 }
@@ -332,7 +318,7 @@
 .knav__lang-opt:hover { background: rgba(180,83,9,0.1); }
 .knav__lang-opt.is-active { background: rgba(180,83,9,0.15); }
 
-/* ── Auth ── */
+/* ── Auth buttons ── */
 .knav__auth { display: none; align-items: center; gap: 8px; }
 @media (min-width: 1024px) { .knav__auth { display: flex; } }
 
@@ -350,7 +336,7 @@
   box-shadow: 0 3px 12px rgba(217,119,6,0.4);
   transition: transform 0.18s, box-shadow 0.18s;
 }
-.knav__join:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(217,119,6,0.5); }
+.knav__join:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(217,119,6,0.52); }
 
 /* ── Mobile hamburger ── */
 .knav__hamburger { display: inline-flex; }
@@ -360,12 +346,13 @@
    MOBILE PANEL
 ══════════════════════════════════════ */
 .knav__mobile {
-  position: absolute; top: 100%; left: 0; right: 0;
+  position: fixed;
+  top: 96px; left: 20px; right: 20px;
   background: #fffbf4;
   border: 1px solid rgba(180,83,9,0.15);
-  border-radius: 0 0 16px 16px;
-  overflow: hidden;
-  box-shadow: 0 12px 30px rgba(120,53,15,0.15);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 12px 40px rgba(120,53,15,0.18);
+  z-index: 59;
 }
 :root[class~='dark'] .knav__mobile { background: #1c1410; border-color: rgba(245,158,11,0.2); }
 
@@ -397,31 +384,34 @@
   display: flex; flex-direction: column; gap: 8px;
   padding: 12px 16px 16px;
 }
-.knav__signin--full, .knav__join--full { text-align: center; width: 100%; padding: 12px; }
-
-/* ══════════════════════════════════════
-   SCROLLED STATE — blade becomes white/cream
-══════════════════════════════════════ */
-.knav--scrolled .knav__blade {
-  background: linear-gradient(175deg,
-    #ffffff 0%, #f8f4ec 10%, #f0ebe0 22%,
-    #e4ddd0 35%, #ece6d8 50%, #f4eee4 60%,
-    #e4ddd0 74%, #d4ccc0 87%, #c0b8a8 100%
-  );
-  box-shadow: 0 4px 20px rgba(120,53,15,0.1);
+.knav__signin--full, .knav__join--full {
+  text-align: center; width: 100%; padding: 12px;
 }
 
 /* ══════════════════════════════════════
-   DARK MODE OVERRIDES
+   DARK MODE
 ══════════════════════════════════════ */
 :root[class~='dark'] .knav__brand-text { color: #fde68a; }
 :root[class~='dark'] .knav__brand-sub  { color: #fbbf24; }
-:root[class~='dark'] .knav__link       { color: #e8c870; }
+:root[class~='dark'] .knav__link       { color: #c8a050; }
 :root[class~='dark'] .knav__link:hover { color: #fde68a; background: rgba(245,158,11,0.12); }
 :root[class~='dark'] .knav__link--active { color: #fde68a !important; background: rgba(245,158,11,0.16) !important; }
-:root[class~='dark'] .knav__icon-btn   { color: #fcd34d; }
-:root[class~='dark'] .knav__signin     { color: #fcd34d; }
-:root[class~='dark'] .knav__lang-btn   { color: #fcd34d; }
+:root[class~='dark'] .knav__icon-btn   { color: #c8a050; }
+:root[class~='dark'] .knav__signin     { color: #c8a050; }
+:root[class~='dark'] .knav__lang-btn   { color: #c8a050; }
+
+/* dark mode blade tint */
+:root[class~='dark'] .knav__blade {
+  background: linear-gradient(175deg,
+    #2a2420 0%, #221e1a 15%, #1e1a16 30%,
+    #262018 45%, #2a2418 60%,
+    #1e1a14 75%, #161210 90%, #100e0c 100%
+  );
+}
+:root[class~='dark'] .knav__tip {
+  border-bottom-color: #222018;
+}
+:root[class~='dark'] .knav__blade-engraving { color: rgba(200,160,80,0.2); }
 
 @media (prefers-reduced-motion: reduce) {
   .knav__logo-ring, .knav__underline,
