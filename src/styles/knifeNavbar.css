@@ -1,58 +1,43 @@
 /* ═══════════════════════════════════════════════════
    KNIFE NAVBAR  —  Nelliy's Rewards
-   Floating knife shape — NO background box behind it
 ═══════════════════════════════════════════════════ */
 
-/* ── Outer wrapper — fully transparent, no bg ── */
+/* ── Outer wrapper ── */
 .knav {
   position: fixed;
-  top: 20px; left: 50%; transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 1180px;
-  height: 68px;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 1160px;
+  height: 70px;
   z-index: 60;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
 }
 
-/* ══════════════════════════════════════════
-   KNIFE SCENE  — the actual visual shape
-   clip-path makes the whole thing knife-shaped
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   KNIFE SCENE — the visual knife shape
+══════════════════════════════════════ */
 .knav__scene {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* clip the outer wrapper to knife shape */
-  clip-path: polygon(
-    0% 100%,        /* bottom-left (handle end rounded via border-radius on children) */
-    0% 0%,          /* top-left */
-    82% 0%,         /* top, before tip */
-    88% 0%,         /* tip start top */
-    100% 50%,       /* tip point */
-    88% 100%,       /* tip end bottom */
-    82% 100%        /* bottom, after tip */
-  );
-  filter: drop-shadow(0 10px 40px rgba(0,0,0,0.5)) drop-shadow(0 2px 8px rgba(0,0,0,0.35));
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.42)) drop-shadow(0 2px 6px rgba(0,0,0,0.28));
 }
 
-/* ── Blade (cream/steel) fills most of the knife ── */
+/* ── Blade fills from left up to 74% width ── */
 .knav__blade {
   position: absolute;
   left: 0; top: 0;
-  width: calc(100% - 195px);
+  width: 74%;
   height: 100%;
   background: linear-gradient(175deg,
-    #ffffff 0%,
-    #f6f2ea 7%,
-    #ede6d8 18%,
-    #ddd5c4 32%,
-    #e8e1d2 46%,
-    #f2ece0 56%,
-    #dfd8c8 70%,
-    #ccc4b2 84%,
-    #b8b0a0 100%
+    #ffffff 0%, #f6f2ea 7%, #ede6d8 18%,
+    #ddd5c4 32%, #e8e1d2 46%, #f2ece0 56%,
+    #dfd8c8 70%, #ccc4b2 84%, #b8b0a0 100%
   );
   border-radius: 4px 0 0 32px / 4px 0 0 32px;
   overflow: hidden;
@@ -81,20 +66,21 @@
   pointer-events: none;
 }
 
-/* ── Tip (pointed right side of blade) ── */
+/* ── Tip — triangle pointing right, sits at 74% ── */
 .knav__tip {
   position: absolute;
-  right: 191px; top: 0;
+  left: 74%; top: 0;
   width: 0; height: 0;
-  border-bottom: 68px solid #ddd5c4;
-  border-right: 52px solid transparent;
+  border-top: 0px solid transparent;
+  border-bottom: 70px solid #ddd5c4;
+  border-right: 48px solid transparent;
 }
 
-/* ── Bolster ── */
+/* ── Bolster — sits between blade and handle ── */
 .knav__bolster {
   position: absolute;
-  right: 187px; top: -1px;
-  width: 22px; height: 70px;
+  left: calc(74% - 1px); top: -2px;
+  width: 20px; height: 74px;
   background: linear-gradient(90deg,
     #706860 0%, #a09890 12%,
     #ccc8c0 26%, #e8e4dc 42%,
@@ -116,11 +102,11 @@
   border-radius: 3px;
 }
 
-/* ── Handle (walnut wood) ── */
+/* ── Handle — from bolster to right edge ── */
 .knav__handle {
   position: absolute;
-  right: 0; top: -1px;
-  width: 195px; height: 70px;
+  left: calc(74% + 18px); top: -2px;
+  right: 0; height: 74px;
   border-radius: 3px 28px 28px 3px;
   background: linear-gradient(135deg,
     #8a5028 0%, #6a3818 13%,
@@ -161,7 +147,7 @@
   position: absolute; inset: 0;
   display: flex; align-items: center;
   justify-content: flex-end;
-  padding-right: 16px; gap: 11px; z-index: 2;
+  padding-right: 18px; gap: 11px; z-index: 2;
 }
 
 .knav__rivet {
@@ -189,7 +175,7 @@
 .knav__cutting-edge {
   position: absolute;
   left: 0; bottom: 0;
-  width: calc(100% - 195px); height: 4px;
+  width: 74%; height: 4px;
   background: linear-gradient(90deg,
     #cec6b4 0%, #f0ece2 14%,
     #ffffff 26%, #e8e2d6 46%,
@@ -199,13 +185,13 @@
 }
 
 /* ══════════════════════════════════════
-   CONTENT layer — sits above the knife
+   CONTENT — sits above knife scene
 ══════════════════════════════════════ */
 .knav__content {
   position: relative; z-index: 4;
   height: 100%;
   display: flex; align-items: center;
-  padding: 0 14px 0 16px; gap: 8px;
+  padding: 0 14px 0 16px; gap: 6px;
 }
 
 /* ── Brand ── */
@@ -215,10 +201,10 @@
 }
 
 .knav__logo-ring {
-  width: 38px; height: 38px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  box-shadow: 0 2px 12px rgba(217,119,6,0.55), inset 0 1px 1px rgba(255,255,255,0.35);
+  box-shadow: 0 2px 10px rgba(217,119,6,0.5), inset 0 1px 1px rgba(255,255,255,0.35);
   flex-shrink: 0;
   transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
@@ -226,34 +212,35 @@
 
 .knav__brand-text {
   display: flex; flex-direction: column; line-height: 1.1;
-  font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em;
+  font-weight: 800; font-size: 1rem; letter-spacing: -0.01em;
   color: #4a2c08;
 }
 .knav__brand-sub {
-  font-size: 0.6rem; font-weight: 600;
+  font-size: 0.58rem; font-weight: 600;
   letter-spacing: 3px; text-transform: uppercase; color: #b45309;
 }
 
 /* ── Desktop links ── */
 .knav__links {
-  display: none; align-items: center; gap: 2px;
+  display: none; align-items: center; gap: 1px;
   flex: 1; justify-content: center;
 }
 @media (min-width: 1024px) { .knav__links { display: flex; } }
 
 .knav__link {
   position: relative;
-  display: flex; align-items: center; gap: 5px;
-  padding: 6px 11px; font-size: 0.855rem; font-weight: 600;
-  color: #5a3a10; text-decoration: none; border-radius: 8px;
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; font-size: 0.83rem; font-weight: 600;
+  color: #5a3a10; text-decoration: none; border-radius: 7px;
   transition: color 0.18s, background 0.18s; outline: none;
+  white-space: nowrap;
 }
 .knav__link:focus-visible { outline: 2px solid rgba(180,83,9,0.5); outline-offset: 2px; }
 .knav__link:hover { color: #92400e; background: rgba(180,83,9,0.1); }
 .knav__link--active { color: #92400e !important; background: rgba(180,83,9,0.13) !important; }
 
 .knav__underline {
-  position: absolute; left: 11px; right: 11px; bottom: 3px;
+  position: absolute; left: 10px; right: 10px; bottom: 3px;
   height: 2px;
   background: linear-gradient(90deg, #d97706, #f97316);
   transform: scaleX(0); transform-origin: left;
@@ -264,13 +251,13 @@
 
 /* ── Actions ── */
 .knav__actions {
-  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
 }
 
 .knav__icon-btn {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 8px;
+  width: 32px; height: 32px; border-radius: 7px;
   background: transparent; border: none; cursor: pointer;
   color: #5a3a10; transition: background 0.18s;
 }
@@ -286,13 +273,13 @@
 
 /* ── Language ── */
 .knav__lang-wrap { position: relative; display: none; }
-@media (min-width: 768px) { .knav__lang-wrap { display: block; } }
+@media (min-width: 900px) { .knav__lang-wrap { display: block; } }
 
 .knav__lang-btn {
-  display: flex; align-items: center; gap: 5px;
-  padding: 6px 10px; border-radius: 8px;
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 8px; border-radius: 7px;
   border: none; background: transparent; cursor: pointer;
-  color: #5a3a10; font-size: 0.8rem; font-weight: 600;
+  color: #5a3a10; font-size: 0.78rem; font-weight: 600;
   transition: background 0.18s;
 }
 .knav__lang-btn:hover { background: rgba(180,83,9,0.1); }
@@ -301,7 +288,7 @@
 
 .knav__lang-menu {
   position: absolute; top: calc(100% + 8px); right: 0;
-  min-width: 160px; background: #fffbf4;
+  min-width: 155px; background: #fffbf4;
   border: 1px solid rgba(180,83,9,0.2); border-radius: 12px;
   box-shadow: 0 12px 30px rgba(120,53,15,0.2);
   padding: 6px; list-style: none; margin: 0; z-index: 80;
@@ -310,33 +297,33 @@
 
 .knav__lang-opt {
   display: flex; align-items: center; gap: 8px;
-  width: 100%; padding: 8px 10px; border-radius: 8px;
+  width: 100%; padding: 7px 10px; border-radius: 7px;
   border: none; background: transparent; cursor: pointer;
-  font-size: 0.85rem; font-weight: 600; color: #78350f; text-align: left;
+  font-size: 0.83rem; font-weight: 600; color: #78350f; text-align: left;
 }
 :root[class~='dark'] .knav__lang-opt { color: #fde68a; }
 .knav__lang-opt:hover { background: rgba(180,83,9,0.1); }
 .knav__lang-opt.is-active { background: rgba(180,83,9,0.15); }
 
-/* ── Auth buttons ── */
-.knav__auth { display: none; align-items: center; gap: 8px; }
+/* ── Auth ── */
+.knav__auth { display: none; align-items: center; gap: 6px; }
 @media (min-width: 1024px) { .knav__auth { display: flex; } }
 
 .knav__signin {
-  padding: 7px 14px; font-size: 0.85rem; font-weight: 700;
-  color: #5a3a10; text-decoration: none; border-radius: 8px;
+  padding: 6px 12px; font-size: 0.82rem; font-weight: 700;
+  color: #5a3a10; text-decoration: none; border-radius: 7px;
   transition: background 0.18s;
 }
 .knav__signin:hover { background: rgba(180,83,9,0.1); }
 
 .knav__join {
-  padding: 8px 16px; font-size: 0.85rem; font-weight: 700;
-  color: white; text-decoration: none; border-radius: 8px;
+  padding: 7px 14px; font-size: 0.82rem; font-weight: 700;
+  color: white; text-decoration: none; border-radius: 7px;
   background: linear-gradient(135deg, #f59e0b, #ea580c);
   box-shadow: 0 3px 12px rgba(217,119,6,0.4);
   transition: transform 0.18s, box-shadow 0.18s;
 }
-.knav__join:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(217,119,6,0.52); }
+.knav__join:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(217,119,6,0.5); }
 
 /* ── Mobile hamburger ── */
 .knav__hamburger { display: inline-flex; }
@@ -347,7 +334,7 @@
 ══════════════════════════════════════ */
 .knav__mobile {
   position: fixed;
-  top: 96px; left: 20px; right: 20px;
+  top: 94px; left: 20px; right: 20px;
   background: #fffbf4;
   border: 1px solid rgba(180,83,9,0.15);
   border-radius: 16px; overflow: hidden;
@@ -363,7 +350,7 @@
 
 .knav__mobile-link {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; font-weight: 600; font-size: 0.95rem;
+  padding: 10px 12px; font-weight: 600; font-size: 0.92rem;
   color: #78350f; text-decoration: none; border-radius: 8px;
   transition: background 0.18s;
 }
@@ -399,8 +386,6 @@
 :root[class~='dark'] .knav__icon-btn   { color: #c8a050; }
 :root[class~='dark'] .knav__signin     { color: #c8a050; }
 :root[class~='dark'] .knav__lang-btn   { color: #c8a050; }
-
-/* dark mode blade tint */
 :root[class~='dark'] .knav__blade {
   background: linear-gradient(175deg,
     #2a2420 0%, #221e1a 15%, #1e1a16 30%,
@@ -408,10 +393,7 @@
     #1e1a14 75%, #161210 90%, #100e0c 100%
   );
 }
-:root[class~='dark'] .knav__tip {
-  border-bottom-color: #222018;
-}
-:root[class~='dark'] .knav__blade-engraving { color: rgba(200,160,80,0.2); }
+:root[class~='dark'] .knav__tip { border-bottom-color: #222018; }
 
 @media (prefers-reduced-motion: reduce) {
   .knav__logo-ring, .knav__underline,
