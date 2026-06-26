@@ -52,7 +52,7 @@ export default function KnifeNavbar({
   const { resolvedTheme, setTheme } = useTheme()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [langMenuOpen, setLangMenuOpen] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -78,7 +78,7 @@ export default function KnifeNavbar({
 
   const handleSelectLang = (code: string) => {
     setLang?.(code)
-    setLangMenuOpen(false)
+    setLangOpen(false)
   }
 
   return (
@@ -95,13 +95,16 @@ export default function KnifeNavbar({
 
         {/* Desktop nav */}
         <nav className="knife-nav__links" aria-label="Primary">
-          {navLinks.map(link => (
-            <Link key={link.href} href={link.href} className="knife-nav__link">
-              {link.icon ? <link.icon className="knife-nav__link-icon" aria-hidden="true" /> : null}
-              <span>{link.label}</span>
-              <span className="knife-nav__link-blade" aria-hidden="true" />
-            </Link>
-          ))}
+          {navLinks.map(link => {
+  const Icon = link.icon;
+  return (
+    <Link key={link.href} href={link.href} className="knife-nav__link">
+      {Icon && <Icon className="knife-nav__link-icon" aria-hidden="true" />}
+      <span>{link.label}</span>
+      <span className="knife-nav__link-blade" aria-hidden="true" />
+    </Link>
+  );
+})}
         </nav>
 
         {/* Right side controls */}
@@ -122,16 +125,16 @@ export default function KnifeNavbar({
             <button
               type="button"
               className="knife-nav__lang-btn"
-              onClick={() => setLangMenuOpen(o => !o)}
+              onClick={() => setLangOpen(o => !o)}
               aria-haspopup="listbox"
-              aria-expanded={langMenuOpen}
+              aria-expanded={langOpen}
             >
               <span className="knife-nav__lang-flag">{currentLang.flag}</span>
               <span className="knife-nav__lang-label">{currentLang.label}</span>
               <ChevronDown className="knife-nav__lang-chevron" />
             </button>
             <AnimatePresence>
-              {langMenuOpen && (
+              {langOpen && (
                 <motion.ul
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -192,12 +195,15 @@ export default function KnifeNavbar({
             className="knife-nav__mobile-panel"
           >
             <nav className="knife-nav__mobile-links" aria-label="Mobile primary">
-              {navLinks.map(link => (
-                <Link key={link.href} href={link.href} className="knife-nav__mobile-link" onClick={() => setMobileOpen(false)}>
-                  {link.icon ? <link.icon className="knife-nav__link-icon" aria-hidden="true" /> : null}
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map(link => {
+  const Icon = link.icon;
+  return (
+    <Link key={link.href} href={link.href} className="knife-nav__mobile-link" onClick={() => setMobileOpen(false)}>
+      {Icon && <Icon className="knife-nav__link-icon" aria-hidden="true" />}
+      {link.label}
+    </Link>
+  );
+})}
             </nav>
 
             <div className="knife-nav__mobile-lang">
