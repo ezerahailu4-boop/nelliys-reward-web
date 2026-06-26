@@ -1,440 +1,429 @@
-/* ═══════════════════════════════════════
-   KNIFE NAVBAR  — Nelliy's Rewards
-═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   KNIFE NAVBAR  —  Nelliy's Rewards
+   The whole nav is shaped like a chef's knife:
+   blade (left) → tip → bolster → handle (right)
+═══════════════════════════════════════════════════ */
 
-.knife-nav {
+/* ── Wrapper ── */
+.knav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 16px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 1200px;
+  height: 72px;
   z-index: 60;
-  background: rgba(10, 7, 4, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: background 0.35s ease, box-shadow 0.35s ease;
+  /* No background here — the knife shape provides it */
+}
+
+/* ══════════════════════════════════════════
+   KNIFE SCENE  (the 3-D knife visual)
+   Absolutely positioned behind content
+══════════════════════════════════════════ */
+.knav__scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 4px 36px 36px 4px;
   overflow: visible;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.45)) drop-shadow(0 2px 6px rgba(0,0,0,0.3));
 }
 
-.knife-nav--scrolled {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow:
-    0 4px 6px -1px rgba(120,53,15,0.08),
-    0 10px 30px -4px rgba(120,53,15,0.12);
-}
-
-:root[class~='dark'] .knife-nav--scrolled {
-  background: rgba(12, 9, 6, 0.97);
-}
-
-/* ── Gold blade-edge accent ── */
-.knife-nav__blade-edge {
+/* ── Blade (cream/steel) ── */
+.knav__blade {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    #d97706 15%,
-    #fbbf24 40%,
-    #f97316 65%,
-    #d97706 85%,
-    transparent 100%
-  );
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  z-index: 2;
-}
-.knife-nav--scrolled .knife-nav__blade-edge { opacity: 1; }
-
-/* ══════════════════════════════════════
-   DECORATIVE 3-D KNIFE SHAPE
-   (absolutely positioned, behind content)
-══════════════════════════════════════ */
-.knife-nav__knife-shape {
-  display: none;
-}
-
-@media (min-width: 1280px) {
-  .knife-nav__knife-shape {
-    display: block;
-    position: absolute;
-    right: 0; top: 50%;
-    transform: translateY(-50%);
-    width: 340px; height: 56px;
-    pointer-events: none;
-    z-index: 0;
-    perspective: 600px;
-  }
-}
-
-.knife-nav__knife-blade {
-  position: absolute;
-  left: 0; top: 4px;
-  width: 218px; height: 48px;
+  left: 0; top: 0;
+  width: calc(100% - 210px);
+  height: 100%;
   background: linear-gradient(175deg,
-    rgba(255,255,255,0.55) 0%,
-    rgba(230,222,210,0.4) 40%,
-    rgba(200,190,175,0.3) 80%,
-    rgba(160,150,135,0.2) 100%
+    #ffffff 0%,
+    #f5f1e8 8%,
+    #ede6d8 20%,
+    #ddd4c4 34%,
+    #e8e0d0 48%,
+    #f2ece0 58%,
+    #dfd8c8 72%,
+    #ccc4b2 86%,
+    #b8b0a0 100%
   );
-  border-radius: 2px 0 0 22px / 2px 0 0 22px;
-  border-top: 1px solid rgba(255,255,255,0.3);
-  border-bottom: 1px solid rgba(160,140,110,0.3);
-  transform: rotateX(10deg) rotateY(-3deg);
-}
-
-.knife-nav__knife-tip {
-  position: absolute;
-  right: 116px; top: 4px;
-  width: 0; height: 0;
-  border-bottom: 48px solid rgba(220,210,195,0.25);
-  border-right: 40px solid transparent;
-  transform: rotateX(10deg) rotateY(-3deg);
-}
-
-.knife-nav__knife-bolster {
-  position: absolute;
-  right: 113px; top: 2px;
-  width: 14px; height: 52px;
-  background: linear-gradient(90deg,
-    rgba(140,130,118,0.4) 0%,
-    rgba(220,215,205,0.5) 50%,
-    rgba(140,130,118,0.4) 100%
-  );
-  border-radius: 1px;
-}
-
-.knife-nav__knife-handle {
-  position: absolute;
-  right: 0; top: 0;
-  width: 118px; height: 56px;
-  border-radius: 3px 18px 18px 3px;
-  background: linear-gradient(135deg,
-    #7a4520 0%, #5a2e10 30%,
-    #3a1e08 50%, #5a3018 70%, #7a4520 100%
-  );
-  border-top: 1px solid rgba(160,100,50,0.5);
-  border-bottom: 2px solid rgba(0,0,0,0.4);
+  border-radius: 4px 0 0 36px / 4px 0 0 36px;
+  border-top: 1.5px solid #ddd6c8;
+  border-left: 1.5px solid #d4ccbc;
+  border-bottom: 2px solid #a09080;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 10px;
-  gap: 7px;
 }
 
-.knife-nav__knife-wood {
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    162deg,
-    transparent, transparent 5px,
-    rgba(0,0,0,0.07) 5px, rgba(0,0,0,0.07) 6px
-  );
-  border-radius: 3px 18px 18px 3px;
-}
-
-.knife-nav__knife-sheen {
+.knav__blade-shine-1 {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 35%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.05) 100%);
+}
+
+.knav__blade-shine-2 {
+  position: absolute;
+  top: 42%; left: 15%;
+  width: 50%; height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  border-radius: 3px;
+}
+
+.knav__blade-engraving {
+  position: absolute;
+  bottom: 8px; left: 160px;
+  font-size: 8px;
+  letter-spacing: 3.5px;
+  color: rgba(80,58,20,0.28);
+  text-transform: uppercase;
+  font-style: italic;
+  font-family: Georgia, serif;
+  white-space: nowrap;
+}
+
+/* ── Blade tip ── */
+.knav__tip {
+  position: absolute;
+  right: 206px; top: 0;
+  width: 0; height: 0;
+  border-bottom: 72px solid #ddd4c4;
+  border-right: 56px solid transparent;
+  filter: drop-shadow(1px 0 0 rgba(0,0,0,0.08));
+}
+
+/* ── Bolster (the metal collar) ── */
+.knav__bolster {
+  position: absolute;
+  right: 202px; top: -2px;
+  width: 24px; height: 76px;
+  background: linear-gradient(90deg,
+    #7a7268 0%,
+    #a8a098 12%,
+    #ccc8c0 25%,
+    #e8e4dc 40%,
+    #f4f0e8 50%,
+    #e8e4dc 60%,
+    #ccc8c0 75%,
+    #a8a098 88%,
+    #7a7268 100%
+  );
+  border-radius: 2px;
+  border-top: 1px solid #c0b8b0;
+  border-bottom: 2px solid #585048;
+  z-index: 2;
+}
+
+.knav__bolster-shine {
+  position: absolute;
+  top: 8px; left: 6px;
+  width: 5px; height: 52%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+  border-radius: 3px;
+}
+
+/* ── Handle (dark walnut wood) ── */
+.knav__handle {
+  position: absolute;
+  right: 0; top: -2px;
+  width: 210px; height: 76px;
+  border-radius: 4px 36px 36px 4px;
+  background: linear-gradient(135deg,
+    #8a5028 0%,
+    #6a3818 14%,
+    #4a2810 28%,
+    #381e08 42%,
+    #4e2c14 56%,
+    #6a3c20 70%,
+    #8a4e28 86%,
+    #784020 100%
+  );
+  border-top: 1px solid #9a5a30;
+  border-bottom: 3px solid #180c04;
+  border-right: 1px solid #5a3010;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.knav__wood {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    162deg,
+    transparent, transparent 6px,
+    rgba(0,0,0,0.07) 6px, rgba(0,0,0,0.07) 7px,
+    transparent 7px, transparent 13px,
+    rgba(255,255,255,0.04) 13px, rgba(255,255,255,0.04) 14px
+  );
+  border-radius: 4px 36px 36px 4px;
+}
+
+.knav__handle-sheen {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 35%;
   background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
-  border-radius: 0 16px 0 0;
+  border-radius: 0 34px 0 0;
 }
 
-.knife-nav__knife-rivet {
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f0d898, #b08030 50%, #6a4010);
-  border: 1px solid #4a2c08;
-  flex-shrink: 0;
-  position: relative; z-index: 1;
-  display: block;
+.knav__handle-shadow {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 30%;
+  background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 100%);
 }
 
-.knife-nav__knife-medallion {
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #f8e080, #c89028 45%, #8a5e10);
-  border: 1.5px solid #4a3008;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  flex-shrink: 0;
-  position: relative; z-index: 1;
+.knav__handle-row {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  justify-content: flex-end;
+  padding-right: 18px; gap: 12px; z-index: 2;
 }
 
-.knife-nav__knife-medallion span {
-  font-size: 5px;
-  color: #e8c050;
-  letter-spacing: 1px;
-  font-weight: 700;
-  line-height: 1;
+.knav__rivet {
+  width: 13px; height: 13px; border-radius: 50%;
+  background: radial-gradient(circle at 33% 28%, #f0ddb0, #c09040 45%, #7a5020 75%, #482e10);
+  border: 1px solid #3a2010;
+  flex-shrink: 0; display: block;
+}
+
+.knav__medallion {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, #f8e898, #d4a030 40%, #a07020 65%, #604010);
+  border: 2px solid #4a3010;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2);
+}
+
+.knav__medallion span {
+  font-size: 6px; color: #e8c860;
+  letter-spacing: 1.5px; font-weight: 700; line-height: 1;
+}
+
+/* ── Cutting edge reflection ── */
+.knav__cutting-edge {
+  position: absolute;
+  left: 0; bottom: 0;
+  width: calc(100% - 210px);
+  height: 4px;
+  background: linear-gradient(90deg,
+    #cec6b4 0%, #f0ece2 15%,
+    #ffffff 28%, #e8e2d6 48%,
+    #d0c8b8 68%, #b0a898 88%, transparent 100%
+  );
+  z-index: 3;
 }
 
 /* ══════════════════════════════════════
-   INNER LAYOUT
+   CONTENT (sits above the knife shape)
 ══════════════════════════════════════ */
-.knife-nav__inner {
-  position: relative; z-index: 1;
-  max-width: 80rem;
-  margin: 0 auto;
-  padding: 0 1.25rem;
-  height: 4.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .knife-nav__inner { height: 5rem; padding: 0 2rem; }
+.knav__content {
+  position: relative; z-index: 4;
+  height: 100%;
+  display: flex; align-items: center;
+  padding: 0 12px 0 16px;
+  gap: 8px;
 }
 
 /* ── Brand ── */
-.knife-nav__brand {
-  display: flex; align-items: center; gap: 0.6rem;
+.knav__brand {
+  display: flex; align-items: center; gap: 8px;
   flex-shrink: 0; text-decoration: none;
 }
 
-.knife-nav__medallion {
-  width: 2.5rem; height: 2.5rem;
-  border-radius: 9999px;
+.knav__logo-ring {
+  width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  box-shadow: 0 2px 12px rgba(217,119,6,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
+  box-shadow: 0 2px 10px rgba(217,119,6,0.5), inset 0 1px 1px rgba(255,255,255,0.35);
+  flex-shrink: 0;
   transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
+.knav__brand:hover .knav__logo-ring { transform: rotate(20deg) scale(1.08); }
 
-.knife-nav__brand:hover .knife-nav__medallion {
-  transform: rotate(20deg) scale(1.08);
-}
-
-.knife-nav__medallion-icon { width: 1.25rem; height: 1.25rem; color: white; }
-
-.knife-nav__brand-text {
+.knav__brand-text {
   display: flex; flex-direction: column; line-height: 1.1;
-  font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em;
-  color: rgba(255,255,255,0.95);
-  transition: color 0.3s ease;
+  font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em;
+  color: #4a2c08;
 }
-
-.knife-nav__brand-sub {
-  font-size: 0.65rem; font-weight: 500;
-  letter-spacing: 3px; text-transform: uppercase;
-  color: #f59e0b; opacity: 0.85;
+.knav__brand-sub {
+  font-size: 0.6rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase; color: #b45309;
 }
-
-.knife-nav--scrolled .knife-nav__brand-text { color: #78350f; }
-:root[class~='dark'] .knife-nav__brand-text { color: #fde68a; }
-:root[class~='dark'] .knife-nav__brand-sub { color: #fbbf24; }
 
 /* ── Desktop links ── */
-.knife-nav__links {
-  display: none; align-items: center; gap: 0.15rem;
-  flex: 1; justify-content: center;
+.knav__links {
+  display: none; align-items: center; gap: 2px; flex: 1; justify-content: center;
 }
+@media (min-width: 1024px) { .knav__links { display: flex; } }
 
-@media (min-width: 1024px) { .knife-nav__links { display: flex; } }
-
-.knife-nav__link {
+.knav__link {
   position: relative;
-  display: flex; align-items: center; gap: 0.35rem;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.875rem; font-weight: 600;
-  color: rgba(255,255,255,0.88);
-  text-decoration: none; border-radius: 0.65rem;
-  transition: color 0.2s ease, background 0.2s ease;
-  outline: none;
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; font-size: 0.855rem; font-weight: 600;
+  color: #5a3a10; text-decoration: none; border-radius: 8px;
+  transition: color 0.18s, background 0.18s; outline: none;
 }
+.knav__link:focus-visible { outline: 2px solid rgba(180,83,9,0.5); outline-offset: 2px; }
+.knav__link:hover { color: #92400e; background: rgba(180,83,9,0.1); }
+.knav__link--active { color: #92400e !important; background: rgba(180,83,9,0.13) !important; }
 
-.knife-nav__link:focus-visible {
-  outline: 2px solid rgba(245,158,11,0.6); outline-offset: 2px;
-}
-
-.knife-nav--scrolled .knife-nav__link { color: #92400e; }
-:root[class~='dark'] .knife-nav__link { color: rgba(255,255,255,0.88); }
-:root[class~='dark'] .knife-nav--scrolled .knife-nav__link { color: #fcd34d; }
-
-.knife-nav__link:hover {
-  color: #fbbf24; background: rgba(245,158,11,0.15);
-}
-.knife-nav--scrolled .knife-nav__link:hover {
-  color: #b45309; background: rgba(245,158,11,0.1);
-}
-:root[class~='dark'] .knife-nav--scrolled .knife-nav__link:hover {
-  color: #fde68a; background: rgba(245,158,11,0.12);
-}
-
-.knife-nav__link--active {
-  color: #fbbf24 !important;
-  background: rgba(245,158,11,0.18) !important;
-}
-.knife-nav--scrolled .knife-nav__link--active {
-  color: #b45309 !important;
-  background: rgba(245,158,11,0.14) !important;
-}
-
-.knife-nav__link-icon { width: 0.9rem; height: 0.9rem; }
-
-.knife-nav__link-blade {
-  position: absolute;
-  left: 0.85rem; right: 0.85rem; bottom: 0.28rem;
+.knav__underline {
+  position: absolute; left: 12px; right: 12px; bottom: 3px;
   height: 2px;
-  background: linear-gradient(90deg, #f59e0b, #f97316);
-  transform: scaleX(0); transform-origin: left center;
-  transition: transform 0.22s ease; border-radius: 2px;
+  background: linear-gradient(90deg, #d97706, #f97316);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.2s ease; border-radius: 2px;
 }
-.knife-nav__link:hover .knife-nav__link-blade,
-.knife-nav__link--active .knife-nav__link-blade { transform: scaleX(1); }
+.knav__link:hover .knav__underline,
+.knav__link--active .knav__underline { transform: scaleX(1); }
 
 /* ── Actions ── */
-.knife-nav__actions {
-  display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
+.knav__actions {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
 
-.knife-nav__icon-btn {
+.knav__icon-btn {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 2.2rem; height: 2.2rem; border-radius: 0.6rem;
+  width: 34px; height: 34px; border-radius: 8px;
   background: transparent; border: none; cursor: pointer;
-  color: rgba(255,255,255,0.88);
-  transition: background 0.2s ease, color 0.2s ease;
+  color: #5a3a10; transition: background 0.18s;
 }
-.knife-nav__icon-btn svg { width: 1.1rem; height: 1.1rem; }
-.knife-nav--scrolled .knife-nav__icon-btn { color: #92400e; }
-:root[class~='dark'] .knife-nav__icon-btn { color: #fcd34d; }
-.knife-nav__icon-btn:hover { background: rgba(245,158,11,0.2); }
+.knav__icon-btn:hover { background: rgba(180,83,9,0.12); }
 
-.knife-nav__sun, .knife-nav__moon {
+.knav__sun, .knav__moon {
   position: absolute;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transition: transform 0.35s ease, opacity 0.35s ease;
 }
-.knife-nav__moon { opacity: 0; transform: rotate(90deg) scale(0); }
-:root[class~='dark'] .knife-nav__sun { opacity: 0; transform: rotate(-90deg) scale(0); }
-:root[class~='dark'] .knife-nav__moon { opacity: 1; transform: rotate(0deg) scale(1); }
+.knav__moon { opacity: 0; transform: rotate(90deg) scale(0); }
+:root[class~='dark'] .knav__sun  { opacity: 0; transform: rotate(-90deg) scale(0); }
+:root[class~='dark'] .knav__moon { opacity: 1; transform: rotate(0deg) scale(1); }
 
 /* ── Language ── */
-.knife-nav__lang { position: relative; display: none; }
-@media (min-width: 768px) { .knife-nav__lang { display: block; } }
+.knav__lang-wrap { position: relative; display: none; }
+@media (min-width: 768px) { .knav__lang-wrap { display: block; } }
 
-.knife-nav__lang-btn {
-  display: flex; align-items: center; gap: 0.4rem;
-  padding: 0.45rem 0.7rem; border-radius: 0.6rem;
+.knav__lang-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 10px; border-radius: 8px;
   border: 1px solid transparent; background: transparent;
-  cursor: pointer; color: rgba(255,255,255,0.88);
-  font-size: 0.82rem; font-weight: 600;
-  transition: color 0.3s ease, background 0.2s ease;
+  cursor: pointer; color: #5a3a10;
+  font-size: 0.8rem; font-weight: 600;
+  transition: background 0.18s;
 }
-.knife-nav--scrolled .knife-nav__lang-btn { color: #92400e; }
-:root[class~='dark'] .knife-nav__lang-btn { color: #fcd34d; }
-.knife-nav__lang-btn:hover { background: rgba(245,158,11,0.15); }
+.knav__lang-btn:hover { background: rgba(180,83,9,0.1); }
+.knav__lang-label { display: none; }
+@media (min-width: 1100px) { .knav__lang-label { display: inline; } }
 
-.knife-nav__lang-flag { font-size: 1rem; line-height: 1; }
-.knife-nav__lang-chevron { width: 0.8rem; height: 0.8rem; opacity: 0.7; }
-
-.knife-nav__lang-menu {
-  position: absolute; top: calc(100% + 0.5rem); right: 0;
-  min-width: 11rem;
-  background: white;
-  border: 1px solid rgba(245,158,11,0.2);
-  border-radius: 0.75rem;
-  box-shadow: 0 12px 30px rgba(120,53,15,0.18);
-  padding: 0.4rem; list-style: none; margin: 0; z-index: 70;
+.knav__lang-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 160px; background: #fffbf4;
+  border: 1px solid rgba(180,83,9,0.2);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(120,53,15,0.2);
+  padding: 6px; list-style: none; margin: 0; z-index: 80;
 }
-:root[class~='dark'] .knife-nav__lang-menu {
-  background: #1c1917; border-color: rgba(245,158,11,0.25);
-}
+:root[class~='dark'] .knav__lang-menu { background: #1c1410; border-color: rgba(245,158,11,0.25); }
 
-.knife-nav__lang-option {
-  display: flex; align-items: center; gap: 0.5rem;
-  width: 100%; padding: 0.5rem 0.6rem; border-radius: 0.5rem;
+.knav__lang-opt {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 8px 10px; border-radius: 8px;
   border: none; background: transparent; cursor: pointer;
   font-size: 0.85rem; font-weight: 600; color: #78350f; text-align: left;
 }
-:root[class~='dark'] .knife-nav__lang-option { color: #fde68a; }
-.knife-nav__lang-option:hover { background: rgba(245,158,11,0.12); }
-.knife-nav__lang-option.is-active { background: rgba(245,158,11,0.18); }
+:root[class~='dark'] .knav__lang-opt { color: #fde68a; }
+.knav__lang-opt:hover { background: rgba(180,83,9,0.1); }
+.knav__lang-opt.is-active { background: rgba(180,83,9,0.15); }
 
 /* ── Auth ── */
-.knife-nav__auth { display: none; align-items: center; gap: 0.5rem; }
-@media (min-width: 1024px) { .knife-nav__auth { display: flex; } }
+.knav__auth { display: none; align-items: center; gap: 8px; }
+@media (min-width: 1024px) { .knav__auth { display: flex; } }
 
-.knife-nav__signin {
-  padding: 0.5rem 0.9rem; font-size: 0.85rem; font-weight: 700;
-  color: rgba(255,255,255,0.9); text-decoration: none;
-  border-radius: 0.6rem; transition: background 0.2s ease, color 0.3s ease;
+.knav__signin {
+  padding: 7px 14px; font-size: 0.85rem; font-weight: 700;
+  color: #5a3a10; text-decoration: none; border-radius: 8px;
+  transition: background 0.18s;
 }
-.knife-nav--scrolled .knife-nav__signin { color: #92400e; }
-:root[class~='dark'] .knife-nav__signin { color: #fcd34d; }
-.knife-nav__signin:hover { background: rgba(245,158,11,0.15); }
+.knav__signin:hover { background: rgba(180,83,9,0.1); }
 
-.knife-nav__join {
-  padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 700;
-  color: white; text-decoration: none; border-radius: 0.6rem;
+.knav__join {
+  padding: 8px 16px; font-size: 0.85rem; font-weight: 700;
+  color: white; text-decoration: none; border-radius: 8px;
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  box-shadow: 0 4px 14px rgba(217,119,6,0.38);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 3px 12px rgba(217,119,6,0.4);
+  transition: transform 0.18s, box-shadow 0.18s;
 }
-.knife-nav__join:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(217,119,6,0.5);
-}
+.knav__join:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(217,119,6,0.5); }
 
-/* ── Mobile toggle ── */
-.knife-nav__mobile-toggle { display: inline-flex; }
-@media (min-width: 1024px) { .knife-nav__mobile-toggle { display: none; } }
+/* ── Mobile hamburger ── */
+.knav__hamburger { display: inline-flex; }
+@media (min-width: 1024px) { .knav__hamburger { display: none; } }
 
-/* ── Mobile panel ── */
-.knife-nav__mobile-panel {
+/* ══════════════════════════════════════
+   MOBILE PANEL
+══════════════════════════════════════ */
+.knav__mobile {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #fffbf4;
+  border: 1px solid rgba(180,83,9,0.15);
+  border-radius: 0 0 16px 16px;
   overflow: hidden;
-  background: white;
-  border-top: 1px solid rgba(245,158,11,0.15);
+  box-shadow: 0 12px 30px rgba(120,53,15,0.15);
 }
-:root[class~='dark'] .knife-nav__mobile-panel {
-  background: #1c1917; border-top-color: rgba(245,158,11,0.2);
-}
+:root[class~='dark'] .knav__mobile { background: #1c1410; border-color: rgba(245,158,11,0.2); }
 
-.knife-nav__mobile-links {
+.knav__mobile-links {
   display: flex; flex-direction: column;
-  padding: 0.75rem 1.25rem; gap: 0.25rem;
+  padding: 12px 16px; gap: 4px;
 }
 
-.knife-nav__mobile-link {
-  display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.7rem 0.5rem; font-weight: 600; font-size: 0.95rem;
-  color: #92400e; text-decoration: none; border-radius: 0.5rem;
-  transition: background 0.2s ease; outline: none;
+.knav__mobile-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; font-weight: 600; font-size: 0.95rem;
+  color: #78350f; text-decoration: none; border-radius: 8px;
+  transition: background 0.18s;
 }
-.knife-nav__mobile-link:focus-visible {
-  outline: 2px solid rgba(245,158,11,0.5); outline-offset: 2px;
-}
-:root[class~='dark'] .knife-nav__mobile-link { color: #fcd34d; }
-.knife-nav__mobile-link:hover { background: rgba(245,158,11,0.1); }
-.knife-nav__mobile-link--active {
-  background: rgba(245,158,11,0.14) !important;
-  color: #b45309 !important;
-}
-:root[class~='dark'] .knife-nav__mobile-link--active { color: #fde68a !important; }
+:root[class~='dark'] .knav__mobile-link { color: #fcd34d; }
+.knav__mobile-link:hover { background: rgba(180,83,9,0.1); }
+.knav__mobile-link--active { background: rgba(180,83,9,0.14) !important; color: #92400e !important; }
 
-.knife-nav__mobile-lang {
-  display: flex; flex-wrap: wrap; gap: 0.4rem;
-  padding: 0.5rem 1.25rem 0.25rem;
-  border-top: 1px solid rgba(245,158,11,0.12);
+.knav__mobile-langs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(180,83,9,0.12);
 }
-.knife-nav__mobile-lang .knife-nav__lang-option {
-  width: auto; border: 1px solid rgba(245,158,11,0.2);
+.knav__mobile-langs .knav__lang-opt {
+  width: auto; border: 1px solid rgba(180,83,9,0.2); border-radius: 8px;
 }
 
-.knife-nav__mobile-auth {
-  display: flex; flex-direction: column; gap: 0.5rem;
-  padding: 0.75rem 1.25rem 1.25rem;
+.knav__mobile-auth {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 16px 16px;
 }
-.knife-nav__signin--block,
-.knife-nav__join--block { text-align: center; width: 100%; padding: 0.7rem; }
+.knav__signin--full, .knav__join--full { text-align: center; width: 100%; padding: 12px; }
+
+/* ══════════════════════════════════════
+   SCROLLED STATE — blade becomes white/cream
+══════════════════════════════════════ */
+.knav--scrolled .knav__blade {
+  background: linear-gradient(175deg,
+    #ffffff 0%, #f8f4ec 10%, #f0ebe0 22%,
+    #e4ddd0 35%, #ece6d8 50%, #f4eee4 60%,
+    #e4ddd0 74%, #d4ccc0 87%, #c0b8a8 100%
+  );
+  box-shadow: 0 4px 20px rgba(120,53,15,0.1);
+}
+
+/* ══════════════════════════════════════
+   DARK MODE OVERRIDES
+══════════════════════════════════════ */
+:root[class~='dark'] .knav__brand-text { color: #fde68a; }
+:root[class~='dark'] .knav__brand-sub  { color: #fbbf24; }
+:root[class~='dark'] .knav__link       { color: #e8c870; }
+:root[class~='dark'] .knav__link:hover { color: #fde68a; background: rgba(245,158,11,0.12); }
+:root[class~='dark'] .knav__link--active { color: #fde68a !important; background: rgba(245,158,11,0.16) !important; }
+:root[class~='dark'] .knav__icon-btn   { color: #fcd34d; }
+:root[class~='dark'] .knav__signin     { color: #fcd34d; }
+:root[class~='dark'] .knav__lang-btn   { color: #fcd34d; }
 
 @media (prefers-reduced-motion: reduce) {
-  .knife-nav__medallion,
-  .knife-nav__link-blade,
-  .knife-nav__icon-btn svg { transition: none !important; }
+  .knav__logo-ring, .knav__underline,
+  .knav__sun, .knav__moon { transition: none !important; }
 }
