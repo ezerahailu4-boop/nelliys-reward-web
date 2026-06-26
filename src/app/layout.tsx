@@ -34,21 +34,14 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: "Nelliy's Rewards",
   },
-  formatDetection: {
-    telephone: false,
-  },
+  formatDetection: { telephone: false },
   openGraph: {
     title: "Nelliy's Rewards — Ethiopia's Premier Coffee Loyalty",
     description: "Earn points on every coffee. Redeem for free drinks. Join 2000+ members.",
     type: 'website',
     url: 'https://nelliyrewards.com',
     siteName: "Nelliy's Rewards",
-    images: [{
-      url: '/Nelliys Logo Coffee-01.png',
-      width: 1200,
-      height: 630,
-      alt: "Nelliy's Coffee Rewards",
-    }],
+    images: [{ url: '/Nelliys Logo Coffee-01.png', width: 1200, height: 630, alt: "Nelliy's Coffee Rewards" }],
     locale: 'en_ET',
   },
   twitter: {
@@ -57,10 +50,7 @@ export const metadata: Metadata = {
     description: 'Earn points on every coffee. Redeem for free drinks.',
     images: ['/Nelliys Logo Coffee-01.png'],
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 }
 
 export const viewport: Viewport = {
