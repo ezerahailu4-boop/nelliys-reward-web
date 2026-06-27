@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
 import { Toaster } from 'sonner'
-import KnifeNavbar from '@/components/KnifeNavbar'
+import KnifeNavbarWithLang from '@/components/KnifeNavbarWithLang'
 
 export const metadata: Metadata = {
   title: {
@@ -72,7 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <ReactQueryProvider>
-              <KnifeNavbar />
+              <KnifeNavbarWithLang />
               {children}
               <Toaster
                 richColors
