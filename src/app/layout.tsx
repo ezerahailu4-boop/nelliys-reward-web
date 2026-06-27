@@ -68,14 +68,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background antialiased">
+      <body className="min-h-screen bg-background antialiased" style={{ paddingTop: 0 }}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <ReactQueryProvider>
               <KnifeNavbar />
-              <main className="pt-[4.5rem] lg:pt-20">
-                {children}
-              </main>
+              {children}
               <Toaster
                 richColors
                 position="top-center"
