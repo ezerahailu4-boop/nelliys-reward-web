@@ -6,19 +6,19 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X, Sun, Moon, ChevronDown, Trophy, Clock, Gift, User, LayoutDashboard, Home } from 'lucide-react'
+import {
+  Menu, X, Sun, Moon, ChevronDown,
+  Trophy, Clock, Gift, User, LayoutDashboard, Home,
+  Sparkles
+} from 'lucide-react'
 import '../styles/knifeNavbar.css'
 
 export interface KnifeLangOption {
   code: string; label: string; flag: string; rtl?: boolean
 }
-
 export interface KnifeNavLabels {
-  howItWorks: string
-  tiers: string
-  contact: string
+  howItWorks: string; tiers: string; contact: string
 }
-
 interface KnifeNavbarProps {
   lang?: string
   setLang?: (code: string) => void
@@ -27,11 +27,11 @@ interface KnifeNavbarProps {
 }
 
 const DEFAULT_LANGS: KnifeLangOption[] = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'am', label: 'አማርኛ',   flag: '🇪🇹' },
+  { code: 'en', label: 'English',     flag: '🇬🇧' },
+  { code: 'am', label: 'አማርኛ',       flag: '🇪🇹' },
   { code: 'or', label: 'Afaan Oromo', flag: '🇪🇹' },
-  { code: 'ar', label: 'العربية', flag: '🇸🇦', rtl: true },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'ar', label: 'العربية',     flag: '🇸🇦', rtl: true },
+  { code: 'fr', label: 'Français',    flag: '🇫🇷' },
 ]
 
 const NAV_LINKS = [
@@ -44,12 +44,9 @@ const NAV_LINKS = [
 ]
 
 export default function KnifeNavbar({
-  lang = 'en',
-  setLang,
-  langOptions = DEFAULT_LANGS,
-  labels,
+  lang = 'en', setLang, langOptions = DEFAULT_LANGS, labels,
 }: KnifeNavbarProps) {
-  const pathname   = usePathname()
+  const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
   const [scrolled,   setScrolled]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -66,9 +63,8 @@ export default function KnifeNavbar({
 
   return (
     <>
+      {/* ══ DESKTOP KNIFE ══ */}
       <header className={`knav${scrolled ? ' knav--scrolled' : ''}`} aria-label="Site navigation">
-
-        {/* 3-D knife scene */}
         <div className="knav__scene" aria-hidden="true">
           <div className="knav__blade">
             <div className="knav__blade-shine-1" />
@@ -90,39 +86,25 @@ export default function KnifeNavbar({
               <span className="knav__rivet" />
               <span className="knav__rivet" />
               <div className="knav__medallion">
-                <Image
-                  src="/Nelliys Logo Coffee-01.png"
-                  alt="Nelliy's"
-                  width={24}
-                  height={24}
-                  style={{ objectFit: 'contain', borderRadius: '50%' }}
-                />
+                <Image src="/Nelliys Logo Coffee-01.png" alt="Nelliy's" width={26} height={26}
+                  style={{ objectFit: 'contain', borderRadius: '50%' }} />
               </div>
             </div>
           </div>
           <div className="knav__cutting-edge" />
         </div>
 
-        {/* Nav content */}
         <div className="knav__content">
-          {/* Brand with real logo */}
           <Link href="/" className="knav__brand" aria-label="Nelliy's Rewards home">
             <span className="knav__logo-ring">
-              <Image
-                src="/Nelliys Logo Coffee-01.png"
-                alt="Nelliy's Coffee"
-                width={28}
-                height={28}
-                style={{ objectFit: 'contain' }}
-                priority
-              />
+              <Image src="/Nelliys Logo Coffee-01.png" alt="Nelliy's Coffee"
+                width={30} height={30} style={{ objectFit: 'contain' }} priority />
             </span>
             <span className="knav__brand-text">
               Nelliy&apos;s<span className="knav__brand-sub">Rewards</span>
             </span>
           </Link>
 
-          {/* Desktop links */}
           <nav className="knav__links" aria-label="Primary">
             {NAV_LINKS.map(({ href, label, Icon }) => {
               const active = pathname === href
@@ -138,16 +120,13 @@ export default function KnifeNavbar({
             })}
           </nav>
 
-          {/* Right actions */}
           <div className="knav__actions">
-            {/* Theme */}
             <button type="button" className="knav__icon-btn" aria-label="Toggle theme"
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
               <Sun className="knav__sun" size={16} />
               <Moon className="knav__moon" size={16} />
             </button>
 
-            {/* Language */}
             <div className="knav__lang-wrap">
               <button type="button" className="knav__lang-btn"
                 onClick={() => setLangOpen(o => !o)}
@@ -158,8 +137,7 @@ export default function KnifeNavbar({
               </button>
               <AnimatePresence>
                 {langOpen && (
-                  <motion.ul
-                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                  <motion.ul initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.14 }}
                     className="knav__lang-menu" role="listbox">
                     {langOptions.map(opt => (
@@ -176,13 +154,11 @@ export default function KnifeNavbar({
               </AnimatePresence>
             </div>
 
-            {/* Auth */}
             <div className="knav__auth">
               <Link href="/login"    className="knav__signin">Sign In</Link>
-              <Link href="/register" className="knav__join">Join Now</Link>
+              <Link href="/register" className="knav__join"><Sparkles size={13} />Join Now</Link>
             </div>
 
-            {/* Mobile hamburger */}
             <button type="button" className="knav__icon-btn knav__hamburger"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               onClick={() => setMobileOpen(o => !o)}>
@@ -190,42 +166,109 @@ export default function KnifeNavbar({
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile panel */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div className="knav__mobile"
-              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22 }}>
-              <nav className="knav__mobile-links">
-                {NAV_LINKS.map(({ href, label, Icon }) => {
+      {/* ══ MOBILE BOTTOM NAV ══ */}
+      <nav className="knav__mobile-bottom" aria-label="Mobile navigation">
+        <div className="knav__mobile-bottom-glow" aria-hidden="true" />
+        {NAV_LINKS.map(({ href, label, Icon }) => {
+          const active = pathname === href
+          return (
+            <Link key={href} href={href}
+              className={`knav__mob-item${active ? ' knav__mob-item--active' : ''}`}
+              aria-current={active ? 'page' : undefined}>
+              <span className="knav__mob-icon-wrap">
+                <Icon size={22} aria-hidden="true" />
+                {active && <span className="knav__mob-active-ring" />}
+              </span>
+              <span className="knav__mob-label">{label}</span>
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* ══ MOBILE TOP PANEL (hamburger menu) ══ */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div className="knav__mob-backdrop"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileOpen(false)} />
+            <motion.div className="knav__mob-panel"
+              initial={{ opacity: 0, y: -20, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.96 }}
+              transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}>
+
+              {/* Panel header */}
+              <div className="knav__mob-panel-header">
+                <div className="knav__mob-panel-brand">
+                  <Image src="/Nelliys Logo Coffee-01.png" alt="Nelliy's" width={40} height={40}
+                    style={{ objectFit: 'contain', borderRadius: '50%' }} />
+                  <div>
+                    <div className="knav__mob-panel-name">Nelliy&apos;s</div>
+                    <div className="knav__mob-panel-sub">Rewards Program</div>
+                  </div>
+                </div>
+                <button type="button" className="knav__mob-close" onClick={() => setMobileOpen(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Auth row */}
+              <div className="knav__mob-auth-row">
+                <Link href="/login" className="knav__mob-signin" onClick={() => setMobileOpen(false)}>
+                  Sign In
+                </Link>
+                <Link href="/register" className="knav__mob-join" onClick={() => setMobileOpen(false)}>
+                  <Sparkles size={14} /> Join Free
+                </Link>
+              </div>
+
+              {/* Nav links */}
+              <div className="knav__mob-links">
+                {NAV_LINKS.map(({ href, label, Icon }, i) => {
                   const active = pathname === href
                   return (
-                    <Link key={href} href={href}
-                      className={`knav__mobile-link${active ? ' knav__mobile-link--active' : ''}`}
-                      onClick={() => setMobileOpen(false)}>
-                      <Icon size={18} />{label}
-                    </Link>
+                    <motion.div key={href}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 + 0.1 }}>
+                      <Link href={href}
+                        className={`knav__mob-link${active ? ' knav__mob-link--active' : ''}`}
+                        onClick={() => setMobileOpen(false)}>
+                        <span className="knav__mob-link-icon"><Icon size={20} /></span>
+                        <span>{label}</span>
+                        {active && <span className="knav__mob-link-dot" />}
+                      </Link>
+                    </motion.div>
                   )
                 })}
-              </nav>
-              <div className="knav__mobile-langs">
-                {langOptions.map(opt => (
-                  <button key={opt.code} type="button"
-                    className={`knav__lang-opt${opt.code === lang ? ' is-active' : ''}`}
-                    onClick={() => { setLang?.(opt.code); setLangOpen(false) }}>
-                    <span>{opt.flag}</span><span>{opt.label}</span>
-                  </button>
-                ))}
               </div>
-              <div className="knav__mobile-auth">
-                <Link href="/login"    className="knav__signin knav__signin--full" onClick={() => setMobileOpen(false)}>Sign In</Link>
-                <Link href="/register" className="knav__join   knav__join--full"   onClick={() => setMobileOpen(false)}>Join Now</Link>
+
+              {/* Language + theme row */}
+              <div className="knav__mob-bottom-row">
+                <div className="knav__mob-langs">
+                  {langOptions.map(opt => (
+                    <button key={opt.code} type="button"
+                      className={`knav__mob-lang-btn${opt.code === lang ? ' is-active' : ''}`}
+                      onClick={() => { setLang?.(opt.code); setMobileOpen(false) }}>
+                      <span>{opt.flag}</span>
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="knav__mob-theme-btn"
+                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
+                  {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                  <span>{resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode</span>
+                </button>
               </div>
+
             </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }
