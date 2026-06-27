@@ -59,6 +59,16 @@ export default function KnifeNavbar({
   }, [])
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
+  const HIDDEN_PREFIXES = [
+    '/dashboard', '/history', '/order', '/profile', '/rewards',
+    '/scan', '/settings', '/upload', '/referral', '/admin',
+    '/onboarding', '/pos',
+  ]
+  const shouldHide = HIDDEN_PREFIXES.some(
+    (p) => pathname === p || pathname?.startsWith(p + '/')
+  )
+  if (shouldHide) return null
+
   const currentLang = langOptions.find(l => l.code === lang) || langOptions[0]
 
   return (
