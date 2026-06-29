@@ -24,7 +24,7 @@ const NAV = [
   { icon: Users, label: 'Customers', href: '/admin/customers' },
   { icon: ShoppingCart, label: 'Orders', href: '/admin/orders' },
   { icon: FileText, label: 'Receipts', href: '#receipts' },
-  { icon: Gift, label: 'Rewards', href: '#' },
+  { icon: Gift, label: 'Rewards', href: '/admin/rewards' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: Building2, label: 'Branches', href: '/admin/branches' },
   { icon: Package, label: 'Products', href: '/admin/products' },
@@ -33,7 +33,7 @@ const NAV = [
   { icon: Shield, label: 'Fraud', href: '/admin/fraud' },
   { icon: Bell, label: 'Campaigns', href: '/admin/campaigns' },
   { icon: MessageSquare, label: 'Notify Users', href: '/admin/notify' },
-  { icon: Settings, label: 'Settings', href: '#' },
+  { icon: Settings, label: 'Settings', href: '/admin/settings' },
 ]
 
 export default function AdminDashboard() {
