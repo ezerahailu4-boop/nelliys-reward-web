@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyAdminToken } from '@/lib/adminAuth'
+import { requireAdminToken } from '@/lib/adminAuth'
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminToken(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = requireAdminToken(req)
+  if (error) return error
 
   const [products, branches] = await Promise.all([
     prisma.product.findMany({
@@ -20,7 +21,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminToken(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = requireAdminToken(req)
+  if (error) return error
 
   const { branchId, items, totalAmount, customerPhone } = await req.json()
 
@@ -48,18 +50,17 @@ export async function POST(req: NextRequest) {
       items: {
         create: items.map((item: any) => ({
           productId: item.productId,
-          quantity: item.qty,
-          price: item.price,
+          quantity:  item.qty,
+          price:     item.price,
         })),
       },
     },
     include: {
       branch: { select: { name: true } },
-      items: { include: { product: { select: { name: true } } } },
+      items:  { include: { product: { select: { name: true } } } },
     },
   })
 
-  // Award points if user found
   if (userId) {
     await prisma.user.update({
       where: { id: userId },
