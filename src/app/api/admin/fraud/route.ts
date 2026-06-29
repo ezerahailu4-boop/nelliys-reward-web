@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { verifyAdminToken } from '@/lib/adminAuth'
+import { requireAdminToken } from '@/lib/adminAuth'
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminToken(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = requireAdminToken(req)
+  if (error) return error
 
   const { searchParams } = new URL(req.url)
   const minScore = parseFloat(searchParams.get('minScore') || '0.3')
@@ -14,14 +15,13 @@ export async function GET(req: NextRequest) {
       status: { in: ['PENDING', 'FLAGGED'] },
     },
     include: {
-      user: { select: { id: true, name: true, phone: true, email: true } },
+      user:   { select: { id: true, name: true, phone: true, email: true } },
       branch: { select: { id: true, name: true } },
     },
     orderBy: { fraudScore: 'desc' },
     take: 100,
   })
 
-  // Summary stats
   const [total, highRisk, medRisk, reviewedToday] = await Promise.all([
     prisma.receipt.count({ where: { fraudScore: { gt: 0.3 } } }),
     prisma.receipt.count({ where: { fraudScore: { gt: 0.7 } } }),
@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!verifyAdminToken(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { error } = requireAdminToken(req)
+  if (error) return error
 
   const { receiptId, action } = await req.json()
   if (!receiptId || !['approve', 'reject'].includes(action)) {
@@ -49,18 +50,14 @@ export async function PATCH(req: NextRequest) {
 
   const receipt = await prisma.receipt.update({
     where: { id: receiptId },
-    data: {
-      status: newStatus,
-      reviewedAt: new Date(),
-    },
+    data: { status: newStatus, reviewedAt: new Date() },
   })
 
-  // If approved, ensure points were awarded; if rejected, revoke points
   if (action === 'reject' && receipt.pointsEarned > 0) {
     await prisma.user.update({
       where: { id: receipt.userId },
       data: { points: { decrement: receipt.pointsEarned } },
-    }).catch(() => {}) // ignore if user not found
+    }).catch(() => {})
   }
 
   return NextResponse.json({ receipt })
