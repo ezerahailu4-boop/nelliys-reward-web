@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { sendSMS } from '@/lib/twilio'
+import { sendSMS } from '@/lib/sms'
 
 const schema = z.object({
   name: z.string().min(2),
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const body = schema.parse(await req.json())
     // Notify admin via SMS
     const adminPhone = process.env.ADMIN_PHONE || '+251976222266'
-    sendSMS(adminPhone, `New contact from ${body.name} (${body.contact}): ${body.message}`).catch(() => {})
+    sendSMS(adminPhone, `New contact from ${body.name} (${body.contact}): ${body.message}`).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
     return NextResponse.json({ message: 'Message sent successfully' })
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })

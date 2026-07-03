@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, calcPoints, calcTier } from '@/lib/auth'
 import { z } from 'zod'
-import { sendSMS, smsTemplates } from '@/lib/twilio'
+import { sendSMS, smsTemplates } from '@/lib/sms'
 import { sendPointsEarnedEmail } from '@/lib/email'
 import { notifyTierUpgrade } from '@/lib/notifications'
 import { TIER_MULTIPLIER, QR_SCAN_POINTS } from '@/lib/constants'
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         await prisma.user.update({ where: { id: userId }, data: { tier: newTier as any } })
         notifyTierUpgrade(userId).catch(() => {})
       } else {
-        sendSMS(updatedUser.phone, smsTemplates.pointsEarned(pointsEarned, updatedUser.points)).catch(() => {})
+        sendSMS(updatedUser.phone, smsTemplates.pointsEarned(pointsEarned, updatedUser.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
         if (updatedUser.email) sendPointsEarnedEmail(updatedUser.email, pointsEarned, updatedUser.points, "Nelliy's Coffee").catch(() => {})
       }
       return NextResponse.json({ points: pointsEarned, total: updatedUser.points, branch: "Nelliy's Coffee", multiplier })
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         await prisma.user.update({ where: { id: targetId }, data: { tier: newTier as any } })
         notifyTierUpgrade(targetId).catch(() => {})
       } else {
-        sendSMS(updatedUser.phone, smsTemplates.pointsEarned(pointsEarned, updatedUser.points)).catch(() => {})
+        sendSMS(updatedUser.phone, smsTemplates.pointsEarned(pointsEarned, updatedUser.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
         if (updatedUser.email) sendPointsEarnedEmail(updatedUser.email, pointsEarned, updatedUser.points, "Nelliy's Coffee").catch(() => {})
       }
 
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
         await prisma.user.update({ where: { id: userId }, data: { tier: newTier as any } })
         notifyTierUpgrade(userId).catch(() => {})
       } else {
-        sendSMS(updatedUser.phone, smsTemplates.pointsEarned(pointsEarned, updatedUser.points)).catch(() => {})
+        sendSMS(updatedUser.phone, smsTemplates.pointsEarned(pointsEarned, updatedUser.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
         if (updatedUser.email) sendPointsEarnedEmail(updatedUser.email, pointsEarned, updatedUser.points, branch.name).catch(() => {})
       }
 
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
       await prisma.user.update({ where: { id: userId }, data: { tier: newTier as any } })
       notifyTierUpgrade(userId).catch(() => {})
     } else {
-      sendSMS(user.phone, smsTemplates.pointsEarned(pointsEarned, user.points)).catch(() => {})
+      sendSMS(user.phone, smsTemplates.pointsEarned(pointsEarned, user.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
       if (user.email) sendPointsEarnedEmail(user.email, pointsEarned, user.points, branch.name).catch(() => {})
     }
 

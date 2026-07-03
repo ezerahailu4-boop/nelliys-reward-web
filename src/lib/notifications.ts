@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { sendPushNotification } from '@/lib/firebase'
-import { sendSMS, smsTemplates } from '@/lib/twilio'
+import { sendSMS, smsTemplates } from '@/lib/sms'
 import { sendTierUpgradeEmail } from '@/lib/email'
 import { TIER_EMOJI, TIER_BENEFITS, REFERRAL_BONUS } from '@/lib/constants'
 
@@ -17,7 +17,7 @@ export async function notifyReferral(referrerId: string, newMemberName: string) 
   if (user.fcmToken) {
     sendPushNotification(user.fcmToken, title, message, { type: 'referral' }).catch(() => {})
   }
-  sendSMS(user.phone, `Nelliy's Rewards: ${message}`).catch(() => {})
+  sendSMS(user.phone, `Nelliy's Rewards: ${message}`).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
 }
 
 export async function notifyTierUpgrade(userId: string) {
@@ -39,7 +39,7 @@ export async function notifyTierUpgrade(userId: string) {
     sendPushNotification(user.fcmToken, title, message, { type: 'tier_upgrade', tier: user.tier }).catch(() => {})
   }
 
-  sendSMS(user.phone, smsTemplates.tierUpgrade(user.tier)).catch(() => {})
+  sendSMS(user.phone, smsTemplates.tierUpgrade(user.tier)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
 
   if (user.email) {
     sendTierUpgradeEmail(user.email, user.name, user.tier).catch(() => {})

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { z } from 'zod'
-import { sendSMS, smsTemplates } from '@/lib/twilio'
+import { sendSMS, smsTemplates } from '@/lib/sms'
 import { sendRewardRedeemedEmail } from '@/lib/email'
 
 const catalog: Record<string, { title: string; pointsCost: number; value: number }> = {
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
     ])
 
     // Send redemption SMS + email
-    if (user?.phone) sendSMS(user.phone, smsTemplates.rewardRedeemed(item.title)).catch(() => {})
-    if (user?.email) sendRewardRedeemedEmail(user.email, item.title, code).catch(() => {})
+    if (user?.phone) sendSMS(user.phone, smsTemplates.rewardRedeemed(item.title)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
+    if (user?.email) sendRewardRedeemedEmail(user.email, item.title, code).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
 
     return NextResponse.json({ reward })
   } catch (err: any) {

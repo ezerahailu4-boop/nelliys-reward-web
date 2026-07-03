@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { sendSMS } from '@/lib/twilio'
+import { sendSMS } from '@/lib/sms'
 import { toE164 } from '@/lib/phone'
 
 const requestSchema = z.object({ phone: z.string().min(9) })

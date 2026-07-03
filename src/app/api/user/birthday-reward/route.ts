@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
-import { sendSMS, smsTemplates } from '@/lib/twilio'
+import { sendSMS, smsTemplates } from '@/lib/sms'
 
 export async function POST() {
   const { error, session } = await requireAuth()
@@ -35,7 +35,7 @@ export async function POST() {
     prisma.transaction.create({ data: { userId, type: 'bonus', amount: BIRTHDAY_POINTS, description: `🎂 Birthday Bonus — Happy Birthday ${user.name}!` } }),
   ])
 
-  sendSMS(user.phone, smsTemplates.birthday(user.name, BIRTHDAY_POINTS)).catch(() => {})
+  sendSMS(user.phone, smsTemplates.birthday(user.name, BIRTHDAY_POINTS)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
 
   return NextResponse.json({ message: `🎂 Happy Birthday ${user.name}! ${BIRTHDAY_POINTS} bonus points added!`, points: BIRTHDAY_POINTS })
 }

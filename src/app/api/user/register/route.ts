@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { generateReferralCode } from '@/lib/auth'
-import { sendSMS, smsTemplates } from '@/lib/twilio'
+import { sendSMS, smsTemplates } from '@/lib/sms'
 import { sendWelcomeEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rateLimit'
 import { WELCOME_BONUS, REFERRAL_BONUS } from '@/lib/constants'
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Send welcome SMS + email (non-blocking)
-    sendSMS(user.phone, smsTemplates.welcome(user.name, user.points)).catch(() => {})
+    sendSMS(user.phone, smsTemplates.welcome(user.name, user.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
     if (user.email) sendWelcomeEmail(user.email, user.name, user.points).catch(() => {})
 
     return NextResponse.json({ user }, { status: 201 })

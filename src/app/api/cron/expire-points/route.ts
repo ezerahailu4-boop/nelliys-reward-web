@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendSMS } from '@/lib/twilio'
+import { sendSMS } from '@/lib/sms'
 import { sendPushNotification } from '@/lib/firebase'
 
 // Runs 1st of every month at 6am UTC
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       }),
     ])
 
-    sendSMS(user.phone, `Nelliy's Rewards: Your ${user.points} points have expired due to 12 months of inactivity. Visit us to earn more! ☕`).catch(() => {})
+    sendSMS(user.phone, `Nelliy's Rewards: Your ${user.points} points have expired due to 12 months of inactivity. Visit us to earn more! ☕`).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
     if (user.fcmToken) {
       sendPushNotification(user.fcmToken, '⏰ Points Expired', `Your ${user.points} points expired. Come back and earn more!`, { type: 'expiry' }).catch(() => {})
     }
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    sendSMS(user.phone, `Nelliy's Rewards: ⚠️ Your ${user.points} points expire in 30 days! Visit us to keep earning. ☕`).catch(() => {})
+    sendSMS(user.phone, `Nelliy's Rewards: ⚠️ Your ${user.points} points expire in 30 days! Visit us to keep earning. ☕`).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
     if (user.fcmToken) {
       sendPushNotification(user.fcmToken, '⚠️ Points Expiring Soon', `Your ${user.points} points expire in 30 days!`, { type: 'expiry_warning' }).catch(() => {})
     }

@@ -57,7 +57,7 @@ export async function PATCH(req: NextRequest) {
     await prisma.user.update({
       where: { id: receipt.userId },
       data: { points: { decrement: receipt.pointsEarned } },
-    }).catch(() => {})
+    })
   }
 
   return NextResponse.json({ receipt })

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendSMS, smsTemplates } from '@/lib/twilio'
+import { sendSMS, smsTemplates } from '@/lib/sms'
 import { sendBirthdayEmail } from '@/lib/email'
 import { sendPushNotification } from '@/lib/firebase'
 import { BIRTHDAY_BONUS } from '@/lib/constants'
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
       }),
     ])
 
-    sendSMS(user.phone, smsTemplates.birthday(user.name, BIRTHDAY_BONUS)).catch(() => {})
+    sendSMS(user.phone, smsTemplates.birthday(user.name, BIRTHDAY_BONUS)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
     if (user.email) sendBirthdayEmail(user.email, user.name, BIRTHDAY_BONUS).catch(() => {})
     if (user.fcmToken) {
       sendPushNotification(user.fcmToken, `🎂 Happy Birthday ${user.name}!`, `You got ${BIRTHDAY_BONUS} bonus points!`, { type: 'birthday' }).catch(() => {})

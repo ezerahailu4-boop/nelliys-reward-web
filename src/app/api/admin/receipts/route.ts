@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest) {
         const newTier = calcTier(user.points)
         if (newTier !== user.tier) {
           await prisma.user.update({ where: { id: receipt.userId }, data: { tier: newTier as any } })
-          notifyTierUpgrade(receipt.userId).catch(() => {})
+          notifyTierUpgrade(receipt.userId).catch((e) => console.error('[notify] tier upgrade failed:', e))
         }
       }
     } else {
