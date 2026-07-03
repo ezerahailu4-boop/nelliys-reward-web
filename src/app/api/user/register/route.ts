@@ -8,6 +8,7 @@ import { sendWelcomeEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rateLimit'
 import { WELCOME_BONUS, REFERRAL_BONUS } from '@/lib/constants'
 import { notifyReferral } from '@/lib/notifications'
+import { toE164, isValidE164 } from '@/lib/phone'
 
 const schema = z.object({
   name: z.string().min(2).max(60),
@@ -25,6 +26,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const data = schema.parse(body)
+    data.phone = toE164(data.phone)
+
+    if (!isValidE164(data.phone)) {
+      return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
+    }
 
     const existing = await prisma.user.findFirst({
       where: { OR: [{ phone: data.phone }, ...(data.email ? [{ email: data.email }] : [])] },

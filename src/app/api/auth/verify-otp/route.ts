@@ -4,6 +4,7 @@ import { sendSMS } from '@/lib/twilio'
 import { rateLimit } from '@/lib/rateLimit'
 import { z } from 'zod'
 import { OTP_EXPIRY_MS, OTP_LENGTH } from '@/lib/constants'
+import { toE164, isValidE164 } from '@/lib/phone'
 
 const sendSchema = z.object({ phone: z.string().min(9).max(15) })
 const verifySchema = z.object({ phone: z.string().min(9).max(15), code: z.string().length(OTP_LENGTH) })
@@ -20,7 +21,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { phone } = sendSchema.parse(await req.json())
+    const { phone: rawPhone } = sendSchema.parse(await req.json())
+    const phone = toE164(rawPhone)
+    if (!isValidE164(phone)) {
+      return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
+    }
     const code = generateOtp()
     const expires = new Date(Date.now() + OTP_EXPIRY_MS).toISOString()
 
@@ -30,7 +35,15 @@ export async function POST(req: NextRequest) {
       create: { key: `otp:${phone}`, value: { code, expires } },
     })
 
-    await sendSMS(phone, `Your Nelliy's verification code is: ${code}. Valid for 10 minutes. Do not share this code.`)
+    const result = await sendSMS(phone, `Your Nelliy's verification code is: ${code}. Valid for 10 minutes. Do not share this code.`)
+
+    if (!result.success) {
+      console.error('[verify-otp] Failed to send OTP SMS:', result.error)
+      return NextResponse.json(
+        { error: 'Could not send verification code. Please check the phone number and try again.' },
+        { status: 502 }
+      )
+    }
 
     return NextResponse.json({ message: 'OTP sent successfully' })
   } catch {
@@ -41,7 +54,8 @@ export async function POST(req: NextRequest) {
 // PATCH — verify OTP
 export async function PATCH(req: NextRequest) {
   try {
-    const { phone, code } = verifySchema.parse(await req.json())
+    const { phone: rawPhone, code } = verifySchema.parse(await req.json())
+    const phone = toE164(rawPhone)
     const record = await prisma.settings.findUnique({ where: { key: `otp:${phone}` } })
 
     if (!record) return NextResponse.json({ error: 'Invalid or expired code' }, { status: 400 })

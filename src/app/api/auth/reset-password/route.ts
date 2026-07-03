@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { sendSMS } from '@/lib/twilio'
+import { toE164 } from '@/lib/phone'
 
 const requestSchema = z.object({ phone: z.string().min(9) })
 const resetSchema = z.object({ phone: z.string().min(9), code: z.string().length(6), password: z.string().min(6) })
@@ -12,7 +13,8 @@ const resetSchema = z.object({ phone: z.string().min(9), code: z.string().length
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone } = requestSchema.parse(await req.json())
+    const { phone: rawPhone } = requestSchema.parse(await req.json())
+    const phone = toE164(rawPhone)
     const user = await prisma.user.findUnique({ where: { phone } })
     // Always return 200 to avoid user enumeration
     if (user) {
@@ -23,7 +25,10 @@ export async function POST(req: NextRequest) {
         update: { value: { code, expires: expires.toISOString() } },
         create: { key: `reset_${phone}`, value: { code, expires: expires.toISOString() } },
       })
-      sendSMS(phone, `Your Nelliy's password reset code is: ${code}. Valid for 15 minutes.`).catch(() => {})
+      const result = await sendSMS(phone, `Your Nelliy's password reset code is: ${code}. Valid for 15 minutes.`)
+      if (!result.success) {
+        console.error('[reset-password] Failed to send reset SMS:', result.error)
+      }
     }
     return NextResponse.json({ message: 'If an account exists, a code was sent.' })
   } catch {
@@ -33,7 +38,8 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const { phone, code, password } = resetSchema.parse(await req.json())
+    const { phone: rawPhone, code, password } = resetSchema.parse(await req.json())
+    const phone = toE164(rawPhone)
     const record = await prisma.settings.findUnique({ where: { key: `reset_${phone}` } })
     if (!record) return NextResponse.json({ error: 'Invalid or expired code' }, { status: 400 })
 
