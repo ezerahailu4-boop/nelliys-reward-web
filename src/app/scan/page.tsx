@@ -294,6 +294,13 @@ export default function ScanPage() {
                     <p className="font-semibold">Total: {result.data.total} pts</p>
                   </div>
                 )}
+                {result.success && !result.data?.amount && (
+                  <Link href="/upload" className="block mb-3">
+                    <Button className="w-full h-12 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold">
+                      📸 Upload receipt photo for bonus points
+                    </Button>
+                  </Link>
+                )}
                 <div className="flex gap-3 mt-5">
                   <Button onClick={() => { setResult(null); processedRef.current = false }} variant="outline" className="flex-1 border-amber-200 text-amber-700">
                     Scan Again
