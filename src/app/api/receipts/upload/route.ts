@@ -62,11 +62,17 @@ function parseAmount(text: string): number {
     l.replace(/[\u066B\u066C]/g, '.').replace(/,(?=\d{3})/g, '').replace(/\s+/g, ' ').trim()
   ).filter(Boolean)
 
-  const exactTotal = /^\s*(?:total|cash|grand\s*total|amount\s*due|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb)\b/i
+  const exactTotal = /^\s*[*#]?\s*(?:total|cash|grand\s*total|amount\s*due|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb)\b/i
   const broadTotal = /(?:total|cash|grand\s*total|net\s*total|amount\s*due|balance\s*due|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb|ETB|birr)/i
 
+  // Only accept numbers formatted as real currency amounts (e.g. 140.00, *140.00) —
+  // this receipt printer always shows 2 decimal places for money, so this filters out
+  // reference codes, phone numbers, FS numbers, and other OCR digit noise that has no
+  // decimal point or the wrong number of decimals.
+  const moneyPattern = /(\d+\.\d{2})\b/g
+
   const getNum = (line: string) => {
-    const nums = Array.from(line.matchAll(/(\d+\.?\d*)/g)).map(m => parseFloat(m[1])).filter(v => v > 0)
+    const nums = Array.from(line.matchAll(moneyPattern)).map(m => parseFloat(m[1])).filter(v => v > 0)
     return nums.length ? nums[nums.length - 1] : 0
   }
 
@@ -79,7 +85,7 @@ function parseAmount(text: string): number {
   }
   if (best) return best
 
- const all = Array.from(text.matchAll(/(\d+\.?\d*)/g))
+  const all = Array.from(text.matchAll(moneyPattern))
     .map(m => parseFloat(m[1]))
     .filter(v => v >= 20 && v <= 100000)
   return all.length ? Math.max(...all) : 0
@@ -114,6 +120,7 @@ export async function POST(req: NextRequest) {
     try {
       ocrText = await runVisionOcr(Buffer.from(bytes))
       amount = parseAmount(ocrText)
+      console.log('OCR raw text:', ocrText.slice(0, 500))
       console.log('OCR amount:', amount)
     } catch (ocrErr) {
       console.error('OCR failed, using flat points:', ocrErr)
