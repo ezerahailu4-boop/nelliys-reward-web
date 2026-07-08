@@ -6,6 +6,58 @@ import crypto from 'crypto'
 
 export const maxDuration = 60
 
+/**
+ * Runs OCR on an image buffer using the Google Cloud Vision API (REST).
+ * Requires GOOGLE_VISION_API_KEY env var (create one in Google Cloud Console
+ * with the Vision API enabled, restricted to that API for safety).
+ * Times out after 10s so a slow/hanging call can't eat the whole 60s function budget.
+ */
+async function runVisionOcr(imageBuffer: Buffer): Promise<string> {
+  const apiKey = process.env.GOOGLE_VISION_API_KEY
+  if (!apiKey) {
+    throw new Error('GOOGLE_VISION_API_KEY is not set')
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+
+  try {
+    const res = await fetch(
+      `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          requests: [
+            {
+              image: { content: imageBuffer.toString('base64') },
+              features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
+              imageContext: { languageHints: ['en', 'am'] },
+            },
+          ],
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      const body = await res.text()
+      throw new Error(`Vision API error ${res.status}: ${body.slice(0, 300)}`)
+    }
+
+    const json = await res.json()
+    const responseEntry = json?.responses?.[0]
+
+    if (responseEntry?.error) {
+      throw new Error(`Vision API response error: ${responseEntry.error.message}`)
+    }
+
+    return responseEntry?.fullTextAnnotation?.text ?? ''
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 function parseAmount(text: string): number {
   const lines = text.replace(/\r\n?/g, '\n').split('\n').map(l =>
     l.replace(/[\u066B\u066C]/g, '.').replace(/,(?=\d{3})/g, '').replace(/\s+/g, ' ').trim()
@@ -57,15 +109,11 @@ export async function POST(req: NextRequest) {
 
     const receiptNumber = `RCP-${Date.now()}`
 
-    // Try OCR — if it fails or finds no amount, fall back to flat points
+    // Try OCR via Google Cloud Vision — if it fails or finds no amount, fall back to flat points
     let ocrText = ''
     let amount = 0
     try {
-      const { createWorker } = await import('tesseract.js')
-      const worker = await createWorker('eng')
-      const { data } = await worker.recognize(Buffer.from(bytes))
-      await worker.terminate()
-      ocrText = data.text
+      ocrText = await runVisionOcr(Buffer.from(bytes))
       amount = parseAmount(ocrText)
       console.log('OCR amount:', amount)
     } catch (ocrErr) {
