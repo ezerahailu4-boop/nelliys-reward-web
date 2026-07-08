@@ -7,52 +7,51 @@ import crypto from 'crypto'
 export const maxDuration = 60
 
 /**
- * Runs OCR on an image buffer using the Google Cloud Vision API (REST).
- * Requires GOOGLE_VISION_API_KEY env var (create one in Google Cloud Console
- * with the Vision API enabled, restricted to that API for safety).
- * Times out after 10s so a slow/hanging call can't eat the whole 60s function budget.
+ * Runs OCR on an image buffer using the OCR.space API (REST).
+ * Requires OCR_SPACE_API_KEY env var — get a free key (no card required)
+ * at https://ocr.space/ocrapi/freekey. Free tier: 25,000 requests/month.
+ * Times out after 15s so a slow/hanging call can't eat the whole 60s function budget.
  */
 async function runVisionOcr(imageBuffer: Buffer): Promise<string> {
-  const apiKey = process.env.GOOGLE_VISION_API_KEY
+  const apiKey = process.env.OCR_SPACE_API_KEY
   if (!apiKey) {
-    throw new Error('GOOGLE_VISION_API_KEY is not set')
+    throw new Error('OCR_SPACE_API_KEY is not set')
   }
 
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 10_000)
+  const timeout = setTimeout(() => controller.abort(), 15_000)
 
   try {
-    const res = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          requests: [
-            {
-              image: { content: imageBuffer.toString('base64') },
-              features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
-              imageContext: { languageHints: ['en', 'am'] },
-            },
-          ],
-        }),
-      }
+    const form = new FormData()
+    form.append('apikey', apiKey)
+    form.append('language', 'eng')
+    form.append('OCREngine', '2') // engine 2 = better accuracy for receipts
+    form.append('scale', 'true')
+    form.append(
+      'file',
+      new Blob([new Uint8Array(imageBuffer)], { type: 'image/jpeg' }),
+      'receipt.jpg'
     )
+
+    const res = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      signal: controller.signal,
+      body: form,
+    })
 
     if (!res.ok) {
       const body = await res.text()
-      throw new Error(`Vision API error ${res.status}: ${body.slice(0, 300)}`)
+      throw new Error(`OCR.space error ${res.status}: ${body.slice(0, 300)}`)
     }
 
     const json = await res.json()
-    const responseEntry = json?.responses?.[0]
 
-    if (responseEntry?.error) {
-      throw new Error(`Vision API response error: ${responseEntry.error.message}`)
+    if (json.IsErroredOnProcessing) {
+      const msg = Array.isArray(json.ErrorMessage) ? json.ErrorMessage.join('; ') : json.ErrorMessage
+      throw new Error(`OCR.space processing error: ${msg}`)
     }
 
-    return responseEntry?.fullTextAnnotation?.text ?? ''
+    return json?.ParsedResults?.[0]?.ParsedText ?? ''
   } finally {
     clearTimeout(timeout)
   }
