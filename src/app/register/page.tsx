@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
-import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Loader2, Gift, CheckCircle, KeyRound } from 'lucide-react'
+import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Loader2, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -15,9 +15,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [agreed, setAgreed] = useState(false)
-  const [step, setStep] = useState<'form' | 'otp'>('form')
-  const [otp, setOtp] = useState('')
-  const [otpLoading, setOtpLoading] = useState(false)
   const router = useRouter()
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -29,34 +26,6 @@ export default function RegisterPage() {
     if (form.password.length < 8) return toast.error('Password must be at least 8 characters')
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: form.phone }),
-      })
-      const data = await res.json()
-      if (!res.ok) return toast.error(data.error || 'Failed to send code')
-      toast.success('Verification code sent!')
-      setStep('otp')
-    } catch {
-      toast.error('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVerifyAndRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (otp.length !== 6) return toast.error('Enter the 6-digit code')
-    setOtpLoading(true)
-    try {
-      const verifyRes = await fetch('/api/auth/verify-otp', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: form.phone, code: otp }),
-      })
-      const verifyData = await verifyRes.json()
-      if (!verifyRes.ok) return toast.error(verifyData.error || 'Invalid code')
       const res = await fetch('/api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,7 +39,7 @@ export default function RegisterPage() {
     } catch {
       toast.error('Something went wrong. Please try again.')
     } finally {
-      setOtpLoading(false)
+      setLoading(false)
     }
   }
 
@@ -111,29 +80,6 @@ export default function RegisterPage() {
           <h1 className="font-display text-4xl font-bold text-amber-900 mb-1">Create account</h1>
           <p className="text-amber-700/70 mb-8">Join thousands earning rewards on every coffee</p>
 
-          {step === 'otp' ? (
-            <form onSubmit={handleVerifyAndRegister} className="space-y-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
-                <KeyRound className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-                <p className="text-amber-900 font-semibold">Verify your phone</p>
-                <p className="text-amber-600/70 text-sm mt-1">Code sent to <strong>{form.phone}</strong></p>
-              </div>
-              <Input
-                placeholder="6-digit code"
-                value={otp}
-                onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="h-14 border-amber-200 focus:border-amber-400 bg-white text-center text-2xl tracking-widest font-mono"
-                maxLength={6}
-                autoFocus
-              />
-              <Button type="submit" disabled={otpLoading || otp.length !== 6} className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-lg">
-                {otpLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Verify & Create Account</span><ArrowRight className="w-4 h-4 ml-2" /></>}
-              </Button>
-              <button type="button" onClick={() => setStep('form')} className="w-full text-amber-600 text-sm hover:text-amber-800 transition-colors">
-                ← Back to edit details
-              </button>
-            </form>
-          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {[
               { icon: User, key: 'name', type: 'text', placeholder: 'Full Name', required: true },
@@ -172,10 +118,9 @@ export default function RegisterPage() {
             </label>
 
             <Button type="submit" disabled={loading} className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Continue</span><ArrowRight className="w-4 h-4 ml-2" /></>}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Create Account</span><ArrowRight className="w-4 h-4 ml-2" /></>}
             </Button>
           </form>
-          )}
 
           <p className="text-center text-amber-700 mt-6 text-sm">
             Already have an account?{' '}
