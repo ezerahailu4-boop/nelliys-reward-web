@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { rateLimit } from '@/lib/rateLimit'
+import { toE164, isValidE164 } from '@/lib/phone'
 import '@/lib/validateEnv'
 
 export const authOptions: NextAuthOptions = {
@@ -22,8 +23,17 @@ export const authOptions: NextAuthOptions = {
           if (!rateLimit(`login:${ip}`, 10, 15 * 60 * 1000)) return null
 
           const identifier = credentials.identifier.trim()
+          const isEmail = identifier.includes('@')
+          // Phone numbers are always stored normalized to E.164 (e.g. +2519xxxxxxxx),
+          // so a phone identifier must be normalized the same way before matching —
+          // otherwise "0941960863" won't match a stored "+251941960863".
+          const normalizedPhone = !isEmail ? toE164(identifier) : null
+          const phoneCandidates = normalizedPhone && isValidE164(normalizedPhone)
+            ? [normalizedPhone, identifier]
+            : [identifier]
+
           const user = await prisma.user.findFirst({
-            where: { OR: [{ email: identifier }, { phone: identifier }] },
+            where: { OR: [{ email: identifier }, { phone: { in: phoneCandidates } }] },
             select: { id: true, email: true, name: true, phone: true, password: true, role: true, tier: true, points: true, isActive: true, isVerified: true }
           })
           if (!user?.password || !user.isActive) return null
