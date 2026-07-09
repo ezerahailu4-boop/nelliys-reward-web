@@ -9,6 +9,7 @@ import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Loader2, CheckCircle 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { toE164 } from '@/lib/phone'
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '' })
@@ -34,7 +35,8 @@ export default function RegisterPage() {
       const data = await res.json()
       if (!res.ok) return toast.error(data.error || 'Registration failed')
       toast.success('Account created! Signing you in...')
-      await signIn('credentials', { identifier: form.phone || form.email, password: form.password, redirect: false })
+      const normalizedIdentifier = form.phone ? toE164(form.phone) : form.email
+      await signIn('credentials', { identifier: normalizedIdentifier, password: form.password, redirect: false })
       router.push('/onboarding')
     } catch {
       toast.error('Something went wrong. Please try again.')
