@@ -5,15 +5,16 @@ export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
-
     // Redirect admin routes — must have admin role
     if (pathname.startsWith('/admin') && !['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes(token?.role as string)) {
       return NextResponse.redirect(new URL('/admin/login', req.url))
     }
-
     return NextResponse.next()
   },
   {
+    pages: {
+      signIn: '/login',
+    },
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl
