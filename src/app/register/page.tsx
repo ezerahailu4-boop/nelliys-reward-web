@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Mail, Phone, Lock, Eye, EyeOff, User, ArrowRight, Loader2, CheckCircle } from 'lucide-react'
@@ -16,7 +15,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [agreed, setAgreed] = useState(false)
-  const router = useRouter()
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -33,14 +31,24 @@ export default function RegisterPage() {
         body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, password: form.password, referralCode: form.referralCode }),
       })
       const data = await res.json()
-      if (!res.ok) return toast.error(data.error || 'Registration failed')
+      if (!res.ok) {
+        toast.error(data.error || 'Registration failed')
+        setLoading(false)
+        return
+      }
       toast.success('Account created! Signing you in...')
       const normalizedIdentifier = form.phone ? toE164(form.phone) : form.email
-      await signIn('credentials', { identifier: normalizedIdentifier, password: form.password, redirect: false })
-      router.push('/onboarding')
+      const signInRes = await signIn('credentials', { identifier: normalizedIdentifier, password: form.password, redirect: false })
+      if (signInRes?.error) {
+        toast.error('Account created — please sign in')
+        window.location.href = '/login'
+        return
+      }
+      // Hard navigation forces middleware to re-check the freshly-set cookie,
+      // avoiding a stale prefetch/cache from before sign-in completed.
+      window.location.href = '/onboarding'
     } catch {
       toast.error('Something went wrong. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
