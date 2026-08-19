@@ -24,13 +24,13 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://maps.googleapis.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://maps.googleapis.com https://www.gstatic.com https://apis.google.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://menu.nelliy.com https://maps.gstatic.com https://maps.googleapis.com https://*.googleapis.com https://server.arcgisonline.com https://*.arcgisonline.com",
-      "connect-src 'self' https://api.textbee.dev https://vision.googleapis.com https://fcm.googleapis.com https://maps.googleapis.com https://*.googleapis.com https://*.arcgisonline.com",
+      "connect-src 'self' https://api.textbee.dev https://vision.googleapis.com https://fcm.googleapis.com https://maps.googleapis.com https://*.googleapis.com https://*.arcgisonline.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseio.com https://firebaseinstallations.googleapis.com",
       "worker-src 'self' blob:",
-      "frame-src 'self' https://maps.google.com",
+      "frame-src 'self' https://maps.google.com https://www.google.com https://*.firebaseapp.com",
     ].join('; '),
   },
 ]
