@@ -101,8 +101,8 @@ export default function HistoryPage() {
     if (status !== 'authenticated' || activeTab !== 'receipts') return
     setLoadingReceipts(true)
     fetch(`/api/receipts/list?page=${receiptPage}`)
-      .then(r => r.ok ? r.json() : {})
-      .then(d => {
+      .then(r => r.ok ? r.json() : Promise.resolve({ receipts: [], pages: 1 }))
+      .then((d: { receipts: any[]; pages: number }) => {
         setReceipts(d.receipts || [])
         setReceiptTotalPages(d.pages || 1)
       })
