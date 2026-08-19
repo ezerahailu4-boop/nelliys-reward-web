@@ -9,6 +9,7 @@ import { rateLimit } from '@/lib/rateLimit'
 import { WELCOME_BONUS, REFERRAL_BONUS } from '@/lib/constants'
 import { notifyReferral } from '@/lib/notifications'
 import { toE164, isValidE164 } from '@/lib/phone'
+import { verifyFirebaseToken } from '@/lib/firebase'
 
 const schema = z.object({
   name: z.string().min(2).max(60),
@@ -16,6 +17,8 @@ const schema = z.object({
   phone: z.string().min(9).max(15),
   password: z.string().min(8).max(72),
   referralCode: z.string().optional(),
+  firebaseToken: z.string().optional(),
+  isVerified: z.boolean().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -43,6 +46,14 @@ export async function POST(req: NextRequest) {
       if (referrer) referredById = referrer.id
     }
 
+    let isPhoneVerified = Boolean(data.isVerified)
+    if (data.firebaseToken) {
+      const decoded = await verifyFirebaseToken(data.firebaseToken)
+      if (decoded?.phone_number) {
+        isPhoneVerified = true
+      }
+    }
+
     const hashed = await bcrypt.hash(data.password, 12)
     const user = await prisma.user.create({
       data: {
@@ -53,8 +64,9 @@ export async function POST(req: NextRequest) {
         referralCode: generateReferralCode(),
         referredBy: referredById,
         points: WELCOME_BONUS,
+        isVerified: isPhoneVerified,
       },
-      select: { id: true, name: true, email: true, phone: true, tier: true, points: true },
+      select: { id: true, name: true, email: true, phone: true, tier: true, points: true, isVerified: true },
     })
 
     await prisma.transaction.create({

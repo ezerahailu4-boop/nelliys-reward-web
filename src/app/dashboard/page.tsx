@@ -257,19 +257,45 @@ function Dashboard() {
           <Link href="/" className="flex items-center">
             <img src="/Nelliys Logo Coffee-01.png" alt="Nelliy's Coffee" className="h-10 w-auto object-contain" />
           </Link>
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="text-amber-700 relative" onClick={() => setShowLeaderboard(true)}>
-              <Trophy className="w-5 h-5" />
+          <div className="flex items-center gap-1.5">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-amber-100/70 dark:bg-zinc-800 rounded-xl p-0.5 border border-amber-200/50 dark:border-zinc-700">
+              {(['en', 'am', 'or'] as const).map(l => (
+                <button
+                  key={l}
+                  onClick={() => {
+                    setUserLang(l)
+                    localStorage.setItem('nelliy_lang', l)
+                    fetch('/api/user/me', {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ language: l }),
+                    }).catch(() => {})
+                  }}
+                  className={`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                    userLang === l
+                      ? 'bg-white dark:bg-zinc-900 text-amber-900 dark:text-amber-200 shadow-sm'
+                      : 'text-amber-700 dark:text-zinc-400 hover:text-amber-900'
+                  }`}
+                >
+                  {l === 'en' ? 'EN' : l === 'am' ? 'አማ' : 'OR'}
+                </button>
+              ))}
+            </div>
+
+            <Button variant="ghost" size="icon" className="text-amber-700 dark:text-amber-400 relative h-9 w-9" onClick={() => setShowLeaderboard(true)}>
+              <Trophy className="w-4.5 h-4.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-amber-700 relative" onClick={() => {
+            <Button variant="ghost" size="icon" className="text-amber-700 dark:text-amber-400 relative h-9 w-9" onClick={() => {
               setShowNotifications(true)
-              if (unreadCount > 0) fetch('/api/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).then(() => setUnreadCount(0))
             }}>
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />}
+              <Bell className="w-4.5 h-4.5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              )}
             </Button>
-            <Button variant="ghost" size="icon" className="text-amber-700" onClick={() => { signOut({ callbackUrl: '/' }); toast.success('Signed out') }}>
-              <LogOut className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="text-amber-700 dark:text-amber-400 h-9 w-9" onClick={() => { signOut({ callbackUrl: '/' }); toast.success('Signed out') }}>
+              <LogOut className="w-4.5 h-4.5" />
             </Button>
           </div>
         </div>
@@ -392,50 +418,94 @@ function Dashboard() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50 p-4" onClick={() => setShowNotifications(false)}>
             <motion.div initial={{ y: 120, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', damping: 25 }}
               onClick={e => e.stopPropagation()} className="bg-white dark:bg-zinc-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Bell className="w-6 h-6 text-white" />
-                  <h3 className="font-display text-lg font-bold text-white">Notifications</h3>
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Bell className="w-5 h-5 text-white" />
+                  <h3 className="font-display text-base font-bold text-white">{t('notifications')}</h3>
+                  {unreadCount > 0 && (
+                    <span className="bg-white text-amber-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
                 </div>
-                <button onClick={() => setShowNotifications(false)} className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30">
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={() => {
+                        fetch('/api/notifications/read', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({}),
+                        }).then(() => {
+                          setUnreadCount(0)
+                          setNotifications(prev => prev.map(n => ({ ...n, isSent: true })))
+                          toast.success(t('markAllRead'))
+                        })
+                      }}
+                      className="text-white/90 hover:text-white text-[11px] font-semibold underline underline-offset-2"
+                    >
+                      {t('markAllRead')}
+                    </button>
+                  )}
+                  <button onClick={() => setShowNotifications(false)} className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center text-white hover:bg-white/30">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
                   <div className="p-10 text-center">
-                    <Bell className="w-10 h-10 text-amber-200 mx-auto mb-3" />
-                    <p className="text-amber-600 font-medium">No notifications yet</p>
-                    <p className="text-amber-400 text-sm mt-1">We'll notify you about points & rewards</p>
+                    <Bell className="w-10 h-10 text-amber-200 dark:text-zinc-700 mx-auto mb-3" />
+                    <p className="text-amber-700 dark:text-zinc-300 font-semibold text-sm">{t('noNotifications')}</p>
+                    <p className="text-amber-500 dark:text-zinc-500 text-xs mt-1">We'll notify you about points, tier upgrades & bonuses</p>
                   </div>
                 ) : notifications.map((n, i) => (
-                  <div key={n.id} className={`px-5 py-4 flex items-start gap-3 ${i < notifications.length - 1 ? 'border-b border-amber-50' : ''} ${!n.isSent ? 'bg-amber-50/50' : ''}`}>
+                  <div 
+                    key={n.id} 
+                    onClick={() => {
+                      if (!n.isSent) {
+                        fetch('/api/notifications/read', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id: n.id }),
+                        }).then(() => {
+                          setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, isSent: true } : item))
+                          setUnreadCount(c => Math.max(0, c - 1))
+                        })
+                      }
+                    }}
+                    className={`px-5 py-3.5 flex items-start gap-3 transition-colors cursor-pointer ${
+                      i < notifications.length - 1 ? 'border-b border-amber-50 dark:border-zinc-800' : ''
+                    } ${!n.isSent ? 'bg-amber-50/70 dark:bg-amber-950/20' : 'hover:bg-amber-50/30'}`}
+                  >
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base ${
-                      n.type === 'points' ? 'bg-green-100' :
-                      n.type === 'reward' ? 'bg-amber-100' :
-                      n.type === 'tier_upgrade' ? 'bg-purple-100' :
-                      n.type === 'birthday' ? 'bg-pink-100' :
-                      n.type === 'referral' ? 'bg-blue-100' : 'bg-gray-100'
+                      n.type === 'points' ? 'bg-green-100 dark:bg-green-950/40' :
+                      n.type === 'reward' ? 'bg-amber-100 dark:bg-amber-950/40' :
+                      n.type === 'tier_upgrade' || n.type === 'tier' ? 'bg-purple-100 dark:bg-purple-950/40' :
+                      n.type === 'birthday' ? 'bg-pink-100 dark:bg-pink-950/40' :
+                      n.type === 'referral' ? 'bg-blue-100 dark:bg-blue-950/40' : 'bg-gray-100 dark:bg-zinc-800'
                     }`}>
                       {n.type === 'points' ? <Star className="w-4 h-4 text-green-600" /> :
                        n.type === 'reward' ? <Gift className="w-4 h-4 text-amber-600" /> :
-                       n.type === 'tier_upgrade' ? <Crown className="w-4 h-4 text-purple-600" /> :
+                       n.type === 'tier_upgrade' || n.type === 'tier' ? <Crown className="w-4 h-4 text-purple-600" /> :
                        n.type === 'birthday' ? <span className="text-sm">🎂</span> :
                        n.type === 'referral' ? <span className="text-sm">🎉</span> :
                        <Bell className="w-4 h-4 text-blue-600" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-amber-900 text-sm">{n.title}</p>
-                      <p className="text-amber-600/70 text-xs mt-0.5">{n.message}</p>
-                      <p className="text-amber-400 text-xs mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
+                      <p className="font-bold text-amber-950 dark:text-amber-100 text-xs">{n.title}</p>
+                      <p className="text-amber-700/80 dark:text-zinc-300 text-xs mt-0.5 leading-relaxed">{n.message}</p>
+                      <p className="text-amber-400 dark:text-zinc-500 text-[10px] mt-1">
+                        {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
-                    {!n.isSent && <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0 mt-1.5" />}
+                    {!n.isSent && <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0 mt-1" />}
                   </div>
                 ))}
               </div>
-              <div className="px-5 py-4 border-t border-amber-100">
-                <button onClick={() => setShowNotifications(false)} className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-2xl">
-                  Close
+              <div className="px-5 py-3.5 border-t border-amber-100 dark:border-zinc-800">
+                <button onClick={() => setShowNotifications(false)} className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs rounded-xl shadow-md">
+                  {t('close')}
                 </button>
               </div>
             </motion.div>

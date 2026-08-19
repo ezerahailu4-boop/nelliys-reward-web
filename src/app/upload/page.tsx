@@ -202,18 +202,23 @@ export default function UploadReceiptPage() {
               </div>
               <div className="flex gap-3">
                 <Button onClick={reset} variant="outline" className="flex-1 border-amber-300 text-amber-700">Upload Another</Button>
-                <Link href="/dashboard" className="flex-1">
-                  <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold">View Dashboard</Button>
+                <Link href="/history" className="flex-1">
+                  <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold">View History</Button>
                 </Link>
               </div>
             </motion.div>
           )}
           {result?.success === false && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="mt-5 bg-red-50 rounded-2xl p-4 border border-red-200 text-center">
+              className="mt-5 bg-red-50 dark:bg-red-950/40 rounded-2xl p-5 border border-red-200 dark:border-red-900 text-center">
               <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-red-700 font-medium">{result.message}</p>
-              <Button onClick={reset} variant="outline" className="mt-3 border-red-300 text-red-600">Try Again</Button>
+              <p className="text-red-800 dark:text-red-300 font-semibold text-sm">{result.message}</p>
+              <div className="flex gap-2 justify-center mt-3">
+                <Button onClick={reset} variant="outline" className="border-red-300 text-red-600 dark:text-red-300 text-xs">Try Again</Button>
+                <Link href="/history">
+                  <Button variant="ghost" className="text-amber-800 dark:text-amber-300 text-xs">View Receipts History</Button>
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

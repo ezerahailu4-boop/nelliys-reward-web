@@ -4,9 +4,15 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { sendSMS } from '@/lib/sms'
 import { toE164 } from '@/lib/phone'
+import { verifyFirebaseToken } from '@/lib/firebase'
 
 const requestSchema = z.object({ phone: z.string().min(9) })
-const resetSchema = z.object({ phone: z.string().min(9), code: z.string().length(6), password: z.string().min(6) })
+const resetSchema = z.object({ 
+  phone: z.string().min(9), 
+  code: z.string().length(6).optional(), 
+  firebaseToken: z.string().optional(),
+  password: z.string().min(6) 
+})
 
 // POST /api/auth/reset-password  — request code
 // PATCH /api/auth/reset-password — verify code + set new password
@@ -38,18 +44,33 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const { phone: rawPhone, code, password } = resetSchema.parse(await req.json())
+    const { phone: rawPhone, code, firebaseToken, password } = resetSchema.parse(await req.json())
     const phone = toE164(rawPhone)
-    const record = await prisma.settings.findUnique({ where: { key: `reset_${phone}` } })
-    if (!record) return NextResponse.json({ error: 'Invalid or expired code' }, { status: 400 })
 
-    const { code: savedCode, expires } = record.value as any
-    if (savedCode !== code || new Date(expires) < new Date())
-      return NextResponse.json({ error: 'Invalid or expired code' }, { status: 400 })
+    let verified = false
+
+    if (firebaseToken) {
+      const decoded = await verifyFirebaseToken(firebaseToken)
+      if (decoded) {
+        verified = true
+      }
+    } else if (code) {
+      const record = await prisma.settings.findUnique({ where: { key: `reset_${phone}` } })
+      if (record) {
+        const { code: savedCode, expires } = record.value as any
+        if (savedCode === code && new Date(expires) >= new Date()) {
+          verified = true
+          await prisma.settings.delete({ where: { key: `reset_${phone}` } })
+        }
+      }
+    }
+
+    if (!verified) {
+      return NextResponse.json({ error: 'Invalid or expired verification' }, { status: 400 })
+    }
 
     const hashed = await bcrypt.hash(password, 12)
     await prisma.user.update({ where: { phone }, data: { password: hashed } })
-    await prisma.settings.delete({ where: { key: `reset_${phone}` } })
 
     return NextResponse.json({ message: 'Password reset successfully' })
   } catch {

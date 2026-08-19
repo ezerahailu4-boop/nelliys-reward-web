@@ -57,3 +57,14 @@ export async function sendPushToMany(
     return { success: 0, failed: tokens.length }
   }
 }
+
+export async function verifyFirebaseToken(idToken: string) {
+  if (!admin.apps.length) return null
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken)
+    return decoded
+  } catch (err) {
+    console.error('Firebase token verification error:', err)
+    return null
+  }
+}

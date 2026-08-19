@@ -1,4 +1,10 @@
-import { initializeApp, getApps } from 'firebase/app'
+import { initializeApp, getApps, getApp } from 'firebase/app'
+import { 
+  getAuth, 
+  RecaptchaVerifier, 
+  signInWithPhoneNumber, 
+  ConfirmationResult 
+} from 'firebase/auth'
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
@@ -10,7 +16,50 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
+
+export const auth = getAuth(app)
+
+/**
+ * Initializes an invisible reCAPTCHA verifier for Firebase Phone Auth.
+ */
+export function setupRecaptcha(containerId: string = 'recaptcha-container'): RecaptchaVerifier {
+  // Check if window is available (client-side only)
+  if (typeof window === 'undefined') {
+    throw new Error('reCAPTCHA can only be initialized in the browser')
+  }
+
+  // Clear any pre-existing instance attached to window if applicable
+  const win = window as any
+  if (win.recaptchaVerifier) {
+    try {
+      win.recaptchaVerifier.clear()
+    } catch {}
+  }
+
+  const verifier = new RecaptchaVerifier(auth, containerId, {
+    size: 'invisible',
+    callback: () => {
+      // reCAPTCHA solved
+    },
+    'expired-callback': () => {
+      console.warn('reCAPTCHA expired. Please try again.')
+    },
+  })
+
+  win.recaptchaVerifier = verifier
+  return verifier
+}
+
+/**
+ * Sends a phone verification OTP code using Firebase Auth.
+ */
+export async function sendFirebasePhoneOtp(
+  phoneNumber: string, 
+  appVerifier: RecaptchaVerifier
+): Promise<ConfirmationResult> {
+  return await signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+}
 
 export async function requestPushPermission(): Promise<string | null> {
   try {
