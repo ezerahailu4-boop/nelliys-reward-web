@@ -85,6 +85,15 @@ export default function RegisterPage() {
         recaptchaVerifierRef.current = verifier
       } catch (err: any) {
         console.warn('Recaptcha init warning:', err)
+        toast.error(`reCAPTCHA setup failed: ${err?.message || 'Unknown error'}`)
+        setLoading(false)
+        return
+      }
+
+      if (!verifier) {
+        toast.error('reCAPTCHA verifier not initialized. Please refresh and try again.')
+        setLoading(false)
+        return
       }
 
       // Step B: Send OTP through Firebase Phone Auth
@@ -95,6 +104,9 @@ export default function RegisterPage() {
       toast.success(`Verification code sent to ${normalizedPhone}`)
     } catch (err: any) {
       console.error('Firebase Phone Auth Error:', err)
+      console.error('Error code:', err?.code)
+      console.error('Error message:', err?.message)
+      console.error('Error details:', JSON.stringify(err?.customData || err?.serverResponse || {}))
       let msg = 'Failed to send verification SMS.'
       if (err?.code === 'auth/invalid-phone-number') {
         msg = 'Invalid phone number format.'
@@ -102,10 +114,12 @@ export default function RegisterPage() {
         msg = 'Too many requests. Please try again later.'
       } else if (err?.code === 'auth/quota-exceeded') {
         msg = 'SMS quota exceeded. Please contact support.'
+      } else if (err?.code === 'auth/internal-error') {
+        msg = `Firebase internal error. Details: ${err?.message || 'none'} | Code: ${err?.code} | Check: Phone Auth enabled? Blaze plan active? Domain authorized?`
       } else if (err?.message) {
         msg = err.message
       }
-      toast.error(msg)
+      toast.error(msg, { duration: 10000 })
     } finally {
       setLoading(false)
     }
