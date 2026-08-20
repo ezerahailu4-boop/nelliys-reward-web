@@ -7,7 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, 
   Phone, 
+  Mail,
   Lock, 
+  Eye,
+  EyeOff,
   ArrowRight, 
   CheckCircle, 
   Loader2, 
@@ -23,15 +26,20 @@ import { toE164, isValidE164 } from '@/lib/phone'
 import { setupRecaptcha, sendFirebasePhoneOtp } from '@/lib/firebaseClient'
 import type { ConfirmationResult } from 'firebase/auth'
 
-type Step = 'phone' | 'code' | 'password' | 'done'
+type ResetMethod = 'email' | 'phone'
+type Step = 'input' | 'code' | 'password' | 'done'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
-  const [step, setStep] = useState<Step>('phone')
+  const [method, setMethod] = useState<ResetMethod>('email')
+  const [step, setStep] = useState<Step>('input')
+  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)
 
@@ -47,46 +55,101 @@ export default function ForgotPasswordPage() {
     return () => clearInterval(timer)
   }, [countdown])
 
-  const sendCode = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const normalizedPhone = toE164(phone)
-    if (!isValidE164(normalizedPhone)) {
-      return toast.error('Please enter a valid phone number (e.g. +251 9xx xxx xxx)')
-    }
+  const sendCode = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
 
-    setLoading(true)
-    try {
-      let verifier = recaptchaVerifierRef.current
-      try {
-        verifier = setupRecaptcha('recaptcha-container-forgot')
-        recaptchaVerifierRef.current = verifier
-      } catch (err) {
-        console.warn('Recaptcha init warning:', err)
+    if (method === 'email') {
+      const cleanEmail = email.trim().toLowerCase()
+      if (!cleanEmail || !cleanEmail.includes('@')) {
+        return toast.error('Please enter a valid email address')
       }
 
-      const confirmation = await sendFirebasePhoneOtp(normalizedPhone, verifier)
-      setConfirmationResult(confirmation)
-      setCountdown(60)
-      toast.success(`Verification code sent to ${normalizedPhone}`)
-      setStep('code')
-    } catch (err: any) {
-      console.error('Firebase Phone Auth Error:', err)
-      toast.error(err?.message || 'Failed to send verification SMS')
-    } finally {
-      setLoading(false)
+      setLoading(true)
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          toast.error(data.error || 'Failed to send reset code')
+          return
+        }
+
+        setCountdown(60)
+        toast.success(`Verification code sent to ${cleanEmail}`)
+        setStep('code')
+      } catch {
+        toast.error('Network error. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      // Phone method
+      const normalizedPhone = toE164(phone)
+      if (!isValidE164(normalizedPhone)) {
+        return toast.error('Please enter a valid phone number (e.g. +251 9xx xxx xxx)')
+      }
+
+      setLoading(true)
+      try {
+        // First try backend database OTP
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: normalizedPhone }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          toast.error(data.error || 'Failed to send reset code')
+          return
+        }
+
+        // Also try Firebase phone auth if recaptcha container is present
+        try {
+          if (document.getElementById('recaptcha-container-forgot')) {
+            const verifier = setupRecaptcha('recaptcha-container-forgot')
+            recaptchaVerifierRef.current = verifier
+            const confirmation = await sendFirebasePhoneOtp(normalizedPhone, verifier)
+            setConfirmationResult(confirmation)
+          }
+        } catch {
+          // Firebase fallback is optional, backend OTP works directly
+        }
+
+        setCountdown(60)
+        toast.success(`Verification code sent to ${normalizedPhone}`)
+        setStep('code')
+      } catch (err: any) {
+        console.error('Phone reset error:', err)
+        toast.error(err?.message || 'Failed to send verification SMS')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
   const handleVerifyCode = async () => {
-    if (!code || code.length !== 6) return toast.error('Please enter the 6-digit code')
-    if (!confirmationResult) return toast.error('Verification expired. Please request a new code.')
+    const cleanCode = code.trim()
+    if (!cleanCode || cleanCode.length !== 6) {
+      return toast.error('Please enter the 6-digit code')
+    }
 
     setLoading(true)
     try {
-      const userCredential = await confirmationResult.confirm(code)
-      const token = await userCredential.user.getIdToken()
-      setFirebaseToken(token)
-      toast.success('Code verified!')
+      // If Firebase confirmation is active and user is using phone
+      if (confirmationResult && method === 'phone') {
+        try {
+          const userCredential = await confirmationResult.confirm(cleanCode)
+          const token = await userCredential.user.getIdToken()
+          setFirebaseToken(token)
+        } catch {
+          // Fall through to standard backend DB OTP check
+        }
+      }
+
+      toast.success('Code entered! Now enter your new password.')
       setStep('password')
     } catch (err: any) {
       toast.error(err?.message || 'Invalid verification code')
@@ -101,23 +164,32 @@ export default function ForgotPasswordPage() {
     if (password.length < 8) return toast.error('Password must be at least 8 characters')
 
     setLoading(true)
-    const normalizedPhone = toE164(phone)
+    const identifier = method === 'email' ? email.trim().toLowerCase() : toE164(phone)
+
     try {
       const res = await fetch('/api/auth/reset-password', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: normalizedPhone,
-          code: code || undefined,
+          identifier,
+          email: method === 'email' ? identifier : undefined,
+          phone: method === 'phone' ? identifier : undefined,
+          code: code.trim() || undefined,
           firebaseToken: firebaseToken || undefined,
           password,
         }),
       })
+
       const data = await res.json()
-      if (!res.ok) return toast.error(data.error || 'Failed to reset password')
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to reset password')
+        return
+      }
+
+      toast.success('Password updated successfully!')
       setStep('done')
     } catch {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -128,27 +200,27 @@ export default function ForgotPasswordPage() {
       <div id="recaptcha-container-forgot" />
 
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <Link href="/login" className="flex items-center gap-2 text-amber-700 hover:text-amber-900 mb-8">
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Login</span>
+        <Link href="/login" className="flex items-center gap-2 text-amber-800 hover:text-amber-950 mb-6 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-semibold text-sm">Back to Sign In</span>
         </Link>
 
-        <div className="bg-white rounded-3xl p-8 shadow-xl border border-amber-100">
+        <div className="bg-white rounded-3xl p-7 md:p-8 shadow-xl border border-amber-100">
           {/* Steps indicator */}
-          <div className="flex items-center gap-2 mb-8">
-            {(['phone', 'code', 'password'] as Step[]).map((s, i) => (
+          <div className="flex items-center gap-2 mb-7">
+            {(['input', 'code', 'password'] as Step[]).map((s, i) => (
               <div key={s} className="flex items-center gap-2 flex-1">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     step === s
-                      ? 'bg-amber-500 text-white'
-                      : ['phone', 'code', 'password', 'done'].indexOf(step) > i
+                      ? 'bg-amber-500 text-white shadow-md'
+                      : ['input', 'code', 'password', 'done'].indexOf(step) > i
                       ? 'bg-green-500 text-white'
                       : 'bg-amber-100 text-amber-400'
                   }`}
                 >
-                  {['phone', 'code', 'password', 'done'].indexOf(step) > i ? (
-                    <CheckCircle className="w-4 h-4" />
+                  {['input', 'code', 'password', 'done'].indexOf(step) > i ? (
+                    <CheckCircle className="w-3.5 h-3.5" />
                   ) : (
                     i + 1
                   )}
@@ -156,7 +228,7 @@ export default function ForgotPasswordPage() {
                 {i < 2 && (
                   <div
                     className={`flex-1 h-0.5 ${
-                      ['phone', 'code', 'password', 'done'].indexOf(step) > i
+                      ['input', 'code', 'password', 'done'].indexOf(step) > i
                         ? 'bg-green-400'
                         : 'bg-amber-100'
                     }`}
@@ -167,44 +239,86 @@ export default function ForgotPasswordPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {step === 'phone' && (
+            {step === 'input' && (
               <motion.div
-                key="phone"
+                key="input"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
-                  <Phone className="w-7 h-7 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  {method === 'email' ? <Mail className="w-6 h-6 text-white" /> : <Phone className="w-6 h-6 text-white" />}
                 </div>
-                <h1 className="font-display text-2xl font-bold text-amber-900 mb-1">
-                  Forgot Password?
+                <h1 className="font-display text-2xl font-bold text-amber-950 mb-1">
+                  Reset Password
                 </h1>
-                <p className="text-amber-700/70 mb-6 text-sm">
-                  Enter your phone number to receive a verification OTP SMS
+                <p className="text-amber-800/70 mb-5 text-sm">
+                  Choose your preferred method to receive your 6-digit verification code.
                 </p>
+
+                {/* Method selector tabs */}
+                <div className="flex gap-2 mb-5 p-1 bg-amber-100/70 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setMethod('email')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      method === 'email' ? 'bg-white text-amber-900 shadow-sm' : 'text-amber-700 hover:text-amber-900'
+                    }`}
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Email</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMethod('phone')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      method === 'phone' ? 'bg-white text-amber-900 shadow-sm' : 'text-amber-700 hover:text-amber-900'
+                    }`}
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Phone</span>
+                  </button>
+                </div>
+
                 <form onSubmit={sendCode} className="space-y-4">
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
-                    <Input
-                      type="tel"
-                      placeholder="+251 9xx xxx xxx"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 h-12 border-amber-200 focus:border-amber-400"
-                      required
-                    />
-                  </div>
+                  {method === 'email' ? (
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-12 border-amber-200 focus:border-amber-400 bg-white"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+                      <Input
+                        type="tel"
+                        placeholder="+251 9xx xxx xxx"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="pl-10 h-12 border-amber-200 focus:border-amber-400 bg-white"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg"
+                    className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
                   >
                     {loading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        <span>Send Verification OTP</span>
+                        <span>Send Reset Code</span>
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </>
                     )}
@@ -220,19 +334,22 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
-                  <KeyRound className="w-7 h-7 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <KeyRound className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="font-display text-2xl font-bold text-amber-900 mb-1">Enter Code</h1>
-                <p className="text-amber-700/70 mb-6 text-sm">
-                  We sent a 6-digit code to <strong>{toE164(phone)}</strong>
+                <h1 className="font-display text-2xl font-bold text-amber-950 mb-1">Enter 6-Digit Code</h1>
+                <p className="text-amber-800/70 mb-5 text-sm">
+                  We sent a 6-digit code to{' '}
+                  <strong className="text-amber-950 font-semibold">
+                    {method === 'email' ? email : toE164(phone)}
+                  </strong>
                 </p>
                 <div className="space-y-4">
                   <Input
                     placeholder="• • • • • •"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    className="h-12 border-amber-200 focus:border-amber-400 text-center text-2xl tracking-widest font-mono"
+                    className="h-14 border-amber-200 focus:border-amber-400 text-center text-2xl tracking-[0.5em] font-mono font-bold bg-white"
                     maxLength={6}
                     autoFocus
                   />
@@ -241,16 +358,16 @@ export default function ForgotPasswordPage() {
                     disabled={code.length !== 6 || loading}
                     className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg"
                   >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Verify Code <ArrowRight className="w-4 h-4 ml-2" /></>}
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Continue <ArrowRight className="w-4 h-4 ml-2" /></>}
                   </Button>
 
-                  <div className="flex items-center justify-between text-xs text-amber-700 pt-2">
+                  <div className="flex items-center justify-between text-xs text-amber-800 pt-2 font-medium">
                     <button
                       type="button"
-                      onClick={() => setStep('phone')}
-                      className="hover:underline"
+                      onClick={() => setStep('input')}
+                      className="hover:underline text-amber-700"
                     >
-                      Change phone
+                      Change {method === 'email' ? 'email' : 'phone'}
                     </button>
 
                     {countdown > 0 ? (
@@ -259,10 +376,10 @@ export default function ForgotPasswordPage() {
                       </span>
                     ) : (
                       <button
-                        onClick={sendCode}
-                        className="text-amber-600 font-semibold hover:underline flex items-center gap-1"
+                        onClick={() => sendCode()}
+                        className="text-amber-700 font-bold hover:underline flex items-center gap-1"
                       >
-                        <RefreshCw className="w-3 h-3" /> Resend
+                        <RefreshCw className="w-3 h-3" /> Resend Code
                       </button>
                     )}
                   </div>
@@ -277,44 +394,59 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
-                  <Lock className="w-7 h-7 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 shadow-md">
+                  <Lock className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="font-display text-2xl font-bold text-amber-900 mb-1">
-                  New Password
+                <h1 className="font-display text-2xl font-bold text-amber-950 mb-1">
+                  Create New Password
                 </h1>
-                <p className="text-amber-700/70 mb-6 text-sm">
-                  Choose a strong password for your account
+                <p className="text-amber-800/70 mb-5 text-sm">
+                  Choose a strong password with at least 8 characters
                 </p>
                 <form onSubmit={resetPassword} className="space-y-4">
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
                     <Input
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="New password (min 8 chars)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 h-12 border-amber-200 focus:border-amber-400"
+                      className="pl-10 pr-10 h-12 border-amber-200 focus:border-amber-400 bg-white"
                       required
+                      autoFocus
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-amber-400 hover:text-amber-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
                     <Input
-                      type="password"
+                      type={showConfirm ? 'text' : 'password'}
                       placeholder="Confirm new password"
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
-                      className="pl-10 h-12 border-amber-200 focus:border-amber-400"
+                      className="pl-10 pr-10 h-12 border-amber-200 focus:border-amber-400 bg-white"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-amber-400 hover:text-amber-600"
+                    >
+                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                   <Button
                     type="submit"
                     disabled={loading}
                     className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg"
                   >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Reset Password'}
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Set New Password'}
                   </Button>
                 </form>
               </motion.div>
@@ -325,20 +457,20 @@ export default function ForgotPasswordPage() {
                 key="done"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-4"
+                className="text-center py-3"
               >
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <CheckCircle className="w-10 h-10 text-green-600" />
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-9 h-9 text-green-600" />
                 </div>
-                <h2 className="font-display text-2xl font-bold text-amber-900 mb-2">
-                  Password Reset!
+                <h2 className="font-display text-2xl font-bold text-amber-950 mb-2">
+                  Password Updated!
                 </h2>
-                <p className="text-amber-700/70 mb-6">
-                  Your password has been updated successfully.
+                <p className="text-amber-800/70 mb-6 text-sm">
+                  Your password has been successfully reset. You can now sign in with your new credentials.
                 </p>
                 <Button
                   onClick={() => router.push('/login')}
-                  className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg"
                 >
                   Sign In Now
                 </Button>
@@ -350,3 +482,4 @@ export default function ForgotPasswordPage() {
     </div>
   )
 }
+

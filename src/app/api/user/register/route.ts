@@ -89,9 +89,19 @@ export async function POST(req: NextRequest) {
       notifyReferral(referredById, user.name).catch(() => {})
     }
 
-    // Send welcome SMS + email (non-blocking)
-    sendSMS(user.phone, smsTemplates.welcome(user.name, user.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
-    if (user.email) sendWelcomeEmail(user.email, user.name, user.points).catch(() => {})
+    // Send welcome SMS + email (non-blocking with error handling)
+    sendSMS(user.phone, smsTemplates.welcome(user.name, user.points))
+      .then((r) => { if (!r.success) console.error('[sms] Welcome SMS send failed:', r.error) })
+      .catch((e) => console.error('[sms] Welcome SMS send error:', e))
+
+    if (user.email) {
+      sendWelcomeEmail(user.email, user.name, user.points)
+        .then((res) => {
+          if (!res?.success) console.warn('[email] Welcome email failed for', user.email)
+          else console.log('[email] Welcome email successfully sent to', user.email)
+        })
+        .catch((e) => console.error('[email] Welcome email threw error:', e))
+    }
 
     return NextResponse.json({ user }, { status: 201 })
   } catch (err: any) {

@@ -87,33 +87,55 @@ export async function sendFirebasePhoneOtp(
 }
 
 export async function requestPushPermission(): Promise<string | null> {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
+    return null
+  }
   try {
     const { getMessaging, getToken, isSupported } = await import('firebase/messaging')
     const supported = await isSupported()
-    if (!supported) return null
+    if (!supported) {
+      console.log('[fcm] Firebase messaging is not supported in this browser.')
+      return null
+    }
 
     const app = getFirebaseApp()
     if (!app) return null
 
-    const messaging = getMessaging(app)
     const permission = await Notification.requestPermission()
-    if (permission !== 'granted') return null
+    if (permission !== 'granted') {
+      console.log('[fcm] Notification permission was not granted:', permission)
+      return null
+    }
 
-    const token = await getToken(messaging, {
-      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-      serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js'),
-    })
+    const messaging = getMessaging(app)
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.trim() || undefined
 
-    return token || null
+    let swRegistration: ServiceWorkerRegistration | undefined
+    try {
+      swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      await navigator.serviceWorker.ready
+    } catch (swErr) {
+      console.warn('[fcm] Service worker registration warning:', swErr)
+    }
+
+    const tokenOptions: any = {}
+    if (vapidKey) tokenOptions.vapidKey = vapidKey
+    if (swRegistration) tokenOptions.serviceWorkerRegistration = swRegistration
+
+    const token = await getToken(messaging, tokenOptions)
+    if (token) {
+      console.log('[fcm] FCM token obtained successfully')
+      return token
+    }
+    return null
   } catch (err) {
-    console.error('FCM token error:', err)
+    console.warn('[fcm] FCM token error (falling back to standard notifications):', err)
     return null
   }
 }
 
 export async function onForegroundMessage(callback: (payload: any) => void) {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined' || !('Notification' in window)) return
   try {
     const { getMessaging, onMessage, isSupported } = await import('firebase/messaging')
     const supported = await isSupported()
@@ -121,6 +143,12 @@ export async function onForegroundMessage(callback: (payload: any) => void) {
     const app = getFirebaseApp()
     if (!app) return
     const messaging = getMessaging(app)
-    onMessage(messaging, callback)
-  } catch {}
+    onMessage(messaging, (payload) => {
+      console.log('[fcm] Foreground message received:', payload)
+      callback(payload)
+    })
+  } catch (err) {
+    console.warn('[fcm] onForegroundMessage setup warning:', err)
+  }
 }
+
