@@ -67,6 +67,9 @@ export default function UploadReceiptPage() {
       if (!res.ok) {
         toast.error(data.error || 'Upload failed')
         setResult({ success: false, message: data.error || 'Upload failed' })
+      } else if (data.receipt?.status === 'FLAGGED') {
+        toast.info(data.receipt.message || 'Receipt submitted for verification')
+        setResult({ success: true, isFlagged: true, data: data.receipt })
       } else {
         toast.success(`+${data.receipt.pointsEarned} points added!`)
         setResult({ success: true, data: data.receipt })
@@ -188,18 +191,31 @@ export default function UploadReceiptPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="mt-5 bg-white rounded-3xl p-6 border border-green-200 shadow-lg text-center"
+              className={`mt-5 bg-white rounded-3xl p-6 border shadow-lg text-center ${result.isFlagged ? 'border-amber-300' : 'border-green-200'}`}
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <CheckCircle className="w-10 h-10 text-white" />
+              <div className={`w-20 h-20 bg-gradient-to-br rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${result.isFlagged ? 'from-amber-400 to-orange-400' : 'from-green-400 to-emerald-500'}`}>
+                {result.isFlagged ? <AlertCircle className="w-10 h-10 text-white" /> : <CheckCircle className="w-10 h-10 text-white" />}
               </div>
-              <h3 className="text-2xl font-black text-amber-900 mb-1">Points Added! 🎉</h3>
+              <h3 className="text-2xl font-black text-amber-900 mb-1">
+                {result.isFlagged ? 'Under Quick Review ⏳' : 'Points Added! 🎉'}
+              </h3>
               <p className="text-amber-500 text-sm mb-4">{result.data.branch}</p>
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 mb-4">
-                <p className="text-6xl font-black text-green-600">+{result.data.pointsEarned}</p>
-                <p className="text-amber-600 font-medium mt-1">points earned</p>
-                <p className="text-amber-400 text-sm mt-1">from {result.data.amount.toLocaleString()} ETB</p>
-              </div>
+              
+              {result.isFlagged ? (
+                <div className="bg-amber-50 rounded-2xl p-4 mb-4 border border-amber-200 text-left">
+                  <p className="text-amber-900 font-semibold text-sm mb-1">Receipt Submitted</p>
+                  <p className="text-amber-700 text-xs leading-relaxed">
+                    Your receipt of <strong>{result.data.amount.toLocaleString()} ETB</strong> is being verified. Once approved, <strong>+{result.data.pointsEarned} points</strong> will be credited to your account balance!
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 mb-4">
+                  <p className="text-6xl font-black text-green-600">+{result.data.pointsEarned}</p>
+                  <p className="text-amber-600 font-medium mt-1">points earned</p>
+                  <p className="text-amber-400 text-sm mt-1">from {result.data.amount.toLocaleString()} ETB</p>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button onClick={reset} variant="outline" className="flex-1 border-amber-300 text-amber-700">Upload Another</Button>
                 <Link href="/history" className="flex-1">
