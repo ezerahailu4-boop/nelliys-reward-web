@@ -44,7 +44,7 @@ export const TIER_STYLES: Record<string, string> = {
 }
 
 export const TIER_BENEFITS: Record<string, string> = {
-  BRONZE: 'Earn 1 pt per 10 ETB spent.',
+  BRONZE: 'Earn 1 pt per 30 ETB spent.',
   SILVER: '1.25× points multiplier + early access to offers.',
   GOLD: '1.5× points multiplier + priority service.',
   VIP: '2× points multiplier + exclusive perks & free monthly drink.',
@@ -58,8 +58,8 @@ export const TIER_PERKS: Record<string, string[]> = {
 }
 
 // ── Points ───────────────────────────────────────────────────────────────────
-export const POINTS_PER_ETB = 10        // 1 point per 10 ETB
-export const WELCOME_BONUS = 100
+export const POINTS_PER_ETB = 30        // 1 point per 30 ETB
+export const WELCOME_BONUS = 50
 export const REFERRAL_BONUS = 200
 export const BIRTHDAY_BONUS = 150
 export const REVIEW_BONUS = 50
