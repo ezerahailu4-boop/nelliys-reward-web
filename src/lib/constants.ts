@@ -1,16 +1,16 @@
 // ── Tier thresholds ──────────────────────────────────────────────────────────
 export const TIER_THRESHOLDS = {
   BRONZE: 0,
-  SILVER: 501,
-  GOLD: 2001,
-  VIP: 5000,
+  SILVER: 5001,
+  GOLD: 20001,
+  VIP: 50000,
 } as const
 
 export const TIER_NEXT: Record<string, number> = {
-  BRONZE: 500,
-  SILVER: 2000,
-  GOLD: 5000,
-  VIP: 99999,
+  BRONZE: 5000,
+  SILVER: 20000,
+  GOLD: 50000,
+  VIP: 999999,
 }
 
 // Minimum points required to enter each tier
@@ -59,11 +59,11 @@ export const TIER_PERKS: Record<string, string[]> = {
 
 // ── Points ───────────────────────────────────────────────────────────────────
 export const POINTS_PER_ETB = 30        // 1 point per 30 ETB
-export const WELCOME_BONUS = 50
-export const REFERRAL_BONUS = 200
-export const BIRTHDAY_BONUS = 150
-export const REVIEW_BONUS = 50
-export const QR_SCAN_POINTS = 50
+export const WELCOME_BONUS = 100        // Welcome bonus: 100 points
+export const REFERRAL_BONUS = 2000      // Referral bonus: 2,000 points
+export const BIRTHDAY_BONUS = 1500      // Birthday bonus: 1,500 points
+export const REVIEW_BONUS = 500         // Google review bonus: 500 points
+export const QR_SCAN_POINTS = 500       // Store check-in QR scan: 500 points
 
 // ── OTP ──────────────────────────────────────────────────────────────────────
 export const OTP_EXPIRY_MS = 10 * 60 * 1000   // 10 minutes

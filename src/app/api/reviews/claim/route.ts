@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { rateLimit } from '@/lib/rateLimit'
 import { z } from 'zod'
+import { REVIEW_BONUS } from '@/lib/constants'
 
-const REVIEW_POINTS = 50
 const GOOGLE_MAPS_URL = 'https://www.google.com/maps/place/Nelliy%27s+Coffee/@9.0012867,38.7672743'
 
 const schema = z.object({
@@ -36,20 +36,20 @@ export async function POST(req: NextRequest) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: userId },
-        data: { points: { increment: REVIEW_POINTS } },
+        data: { points: { increment: REVIEW_BONUS } },
       }),
       prisma.transaction.create({
         data: {
           userId,
           type: 'bonus',
-          amount: REVIEW_POINTS,
+          amount: REVIEW_BONUS,
           description: `Google review bonus — @${googleUsername}`,
           reference: 'google-review',
         },
       }),
     ])
 
-    return NextResponse.json({ points: REVIEW_POINTS, message: `+${REVIEW_POINTS} points added for your Google review!` })
+    return NextResponse.json({ points: REVIEW_BONUS, message: `+${REVIEW_BONUS} points added for your Google review!` })
   } catch (err: any) {
     if (err.name === 'ZodError') return NextResponse.json({ error: err.errors[0]?.message }, { status: 400 })
     return NextResponse.json({ error: 'Failed to claim review bonus' }, { status: 500 })

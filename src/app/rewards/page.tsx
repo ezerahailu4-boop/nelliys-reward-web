@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import BottomNav from '@/components/ui/BottomNav'
 import { useTranslations } from '@/lib/i18n'
+import { REVIEW_BONUS } from '@/lib/constants'
 import type { LangCode } from '@/lib/constants'
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -118,8 +119,8 @@ export default function RewardsPage() {
         if (res.status === 409) setAlreadyClaimedReview(true)
         return toast.error(data.error || 'Could not claim review bonus')
       }
-      toast.success(data.message || '+50 points added for your review!')
-      setUserPoints(prev => prev + 50)
+      toast.success(data.message || `+${REVIEW_BONUS} points added for your review!`)
+      setUserPoints(prev => prev + REVIEW_BONUS)
       setShowReviewModal(false)
       setAlreadyClaimedReview(true)
     } catch {
@@ -341,7 +342,7 @@ export default function RewardsPage() {
                 </div>
 
                 <p className="text-xs text-amber-700/80 dark:text-zinc-400 mb-4 leading-relaxed">
-                  Enter your Google display name so our system can verify your review and credit your account with 50 bonus points.
+                  Enter your Google display name so our system can verify your review and credit your account with {REVIEW_BONUS} bonus points.
                 </p>
 
                 <form onSubmit={handleClaimReview} className="space-y-4">

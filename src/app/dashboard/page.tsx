@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { requestPushPermission, onForegroundMessage } from '@/lib/firebaseClient'
-import { TIER_STYLES, TIER_NEXT, TIER_PERKS } from '@/lib/constants'
+import { TIER_STYLES, TIER_NEXT, TIER_MIN, TIER_PERKS, REVIEW_BONUS } from '@/lib/constants'
 import { useTranslations } from '@/lib/i18n'
 
 // Animated counter hook
@@ -85,8 +85,6 @@ interface Notification {
   isSent: boolean
   createdAt: string
 }
-
-const TIER_MIN: Record<string, number> = { BRONZE: 0, SILVER: 501, GOLD: 2001, VIP: 5001 }
 
 export default function DashboardPage() {
   return (
@@ -719,7 +717,7 @@ function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-bold text-amber-900">Claim Review Points</h3>
-                  <p className="text-amber-600 text-sm">+50 points for your Google review</p>
+                  <p className="text-amber-600 text-sm">+{REVIEW_BONUS} points for your Google review</p>
                 </div>
               </div>
               <p className="text-amber-700/70 text-sm mb-4">

@@ -10,9 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import BottomNav from '@/components/ui/BottomNav'
-import { TIER_STYLES, TIER_NEXT } from '@/lib/constants'
-
-const TIER_MIN: Record<string, number> = { BRONZE: 0, SILVER: 501, GOLD: 2001, VIP: 5001 }
+import { TIER_STYLES, TIER_NEXT, TIER_MIN } from '@/lib/constants'
 
 function BirthdayCard({ user, onClaimed }: { user: any; onClaimed: (pts: number) => void }) {
   const [claiming, setClaiming] = useState(false)
