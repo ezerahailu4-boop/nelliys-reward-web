@@ -8,6 +8,7 @@ import { z } from 'zod'
 const patchSchema = z.object({
   receiptId: z.string().cuid(),
   action: z.enum(['approve', 'reject']),
+  reason: z.string().optional(),
 })
 
 const ALLOWED_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'FLAGGED'] as const
@@ -21,7 +22,10 @@ export async function GET(req: NextRequest) {
 
   const receipts = await prisma.receipt.findMany({
     where: { status: status as any },
-    include: { user: { select: { name: true, phone: true } }, branch: { select: { name: true } } },
+    include: {
+      user: { select: { id: true, name: true, phone: true, email: true, tier: true, points: true } },
+      branch: { select: { id: true, name: true } },
+    },
     orderBy: { createdAt: 'desc' },
     take: 50,
   })
@@ -33,7 +37,7 @@ export async function PATCH(req: NextRequest) {
   const { error } = requireAdminToken(req)
   if (error) return error
   try {
-    const { receiptId, action } = patchSchema.parse(await req.json())
+    const { receiptId, action, reason } = patchSchema.parse(await req.json())
 
     const receipt = await prisma.receipt.findUnique({ where: { id: receiptId } })
     if (!receipt) return NextResponse.json({ error: 'Receipt not found' }, { status: 404 })
@@ -51,6 +55,14 @@ export async function PATCH(req: NextRequest) {
         prisma.transaction.create({
           data: { userId: receipt.userId, type: 'earned', amount: receipt.pointsEarned, description: 'Receipt approved', reference: `receipt:${receiptId}` },
         }),
+        prisma.notification.create({
+          data: {
+            userId: receipt.userId,
+            type: 'receipt',
+            title: '✅ Receipt Approved!',
+            message: `Your receipt of ${receipt.amount} ETB has been approved. +${receipt.pointsEarned} points credited to your account!`,
+          },
+        }),
       ])
 
       const user = await prisma.user.findUnique({ where: { id: receipt.userId }, select: { points: true, tier: true } })
@@ -62,6 +74,7 @@ export async function PATCH(req: NextRequest) {
         }
       }
     } else {
+      const rejectReasonText = reason ? `: ${reason}` : '. Please upload a clear photo of your original receipt.'
       const rejectedReceipt = await prisma.receipt.update({
         where: { id: receiptId },
         data: { status: 'REJECTED', reviewedAt: new Date() },
@@ -71,7 +84,7 @@ export async function PATCH(req: NextRequest) {
           userId: rejectedReceipt.userId,
           type: 'receipt',
           title: '❌ Receipt Not Approved',
-          message: `Your receipt of ${rejectedReceipt.amount} ETB could not be verified. Contact support if you think this is a mistake.`,
+          message: `Your receipt of ${rejectedReceipt.amount} ETB was rejected${rejectReasonText}`,
         },
       })
     }

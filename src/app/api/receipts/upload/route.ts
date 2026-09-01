@@ -5,6 +5,7 @@ import { TIER_MULTIPLIER } from '@/lib/constants'
 import { rateLimit } from '@/lib/rateLimit'
 import crypto from 'crypto'
 import sharp from 'sharp'
+import { saveReceiptImage } from '@/lib/receiptStorage'
 
 export const maxDuration = 60
 
@@ -379,6 +380,15 @@ export async function POST(req: NextRequest) {
     const multiplier = TIER_MULTIPLIER[userRecord?.tier || 'BRONZE'] ?? 1
     const pointsEarned = Math.floor(calcPoints(amount) * multiplier)
 
+    // Save compressed receipt image to persistent storage for admin and customer review
+    let imageUrl: string | null = null
+    try {
+      const compressed = await compressForOcr(buffer).catch(() => buffer)
+      imageUrl = await saveReceiptImage(compressed, receiptNumber)
+    } catch (saveErr) {
+      console.error('[Receipt Upload] Failed to save receipt image:', saveErr)
+    }
+
     // 9. Handle Suspicious / Flagged vs Auto-Approved Receipts
     const isSuspicious = fraudScore >= 0.55
 
@@ -392,6 +402,7 @@ export async function POST(req: NextRequest) {
           amount,
           pointsEarned,
           imageHash,
+          imageUrl,
           ocrData: {
             rawText: ocrText.slice(0, 2000),
             extractedFiscalNumber,
@@ -410,6 +421,7 @@ export async function POST(req: NextRequest) {
           pointsEarned,
           status: 'FLAGGED',
           receiptNumber,
+          imageUrl,
           branch: branch.name,
           message: 'Receipt received! Due to verification checks, points will be credited upon quick review.',
         },
@@ -425,6 +437,7 @@ export async function POST(req: NextRequest) {
         amount,
         pointsEarned,
         imageHash,
+        imageUrl,
         ocrData: {
           rawText: ocrText.slice(0, 2000),
           extractedFiscalNumber,

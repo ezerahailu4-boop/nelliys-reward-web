@@ -19,7 +19,9 @@ import {
   AlertTriangle,
   XCircle,
   Building2,
-  Calendar
+  Calendar,
+  Eye,
+  X
 } from 'lucide-react'
 import BottomNav from '@/components/ui/BottomNav'
 import { Badge } from '@/components/ui/badge'
@@ -63,6 +65,7 @@ export default function HistoryPage() {
   const [loadingReceipts, setLoadingReceipts] = useState(false)
   const [receiptPage, setReceiptPage] = useState(1)
   const [receiptTotalPages, setReceiptTotalPages] = useState(1)
+  const [previewReceipt, setPreviewReceipt] = useState<any | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -367,6 +370,18 @@ export default function HistoryPage() {
                           </div>
                         </div>
 
+                        {/* Photo Preview Link */}
+                        {r.imageUrl && (
+                          <div className="mt-2.5 pt-2 border-t border-amber-50 dark:border-zinc-800/80 flex items-center justify-between">
+                            <button
+                              onClick={() => setPreviewReceipt(r)}
+                              className="text-xs text-amber-600 hover:text-amber-800 font-semibold flex items-center gap-1"
+                            >
+                              <Eye className="w-3.5 h-3.5" /> View Uploaded Receipt Photo
+                            </button>
+                          </div>
+                        )}
+
                         {/* Rejection / Fraud Reasons Feedback */}
                         {(r.status === 'REJECTED' || r.status === 'FLAGGED') && r.fraudReasons?.length > 0 && (
                           <div className="mt-3 p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 rounded-xl text-xs">
@@ -386,6 +401,55 @@ export default function HistoryPage() {
                   })}
                 </div>
               )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Customer Receipt Photo Lightbox Modal */}
+        <AnimatePresence>
+          {previewReceipt && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+              onClick={() => setPreviewReceipt(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white dark:bg-zinc-900 rounded-3xl p-4 max-w-sm w-full shadow-2xl border border-amber-100 dark:border-zinc-800 flex flex-col max-h-[85vh]"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-amber-100 dark:border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <ReceiptIcon className="w-4 h-4 text-amber-600" />
+                    <span className="font-bold text-sm text-amber-950 dark:text-amber-100">
+                      #{previewReceipt.receiptNumber || 'Receipt Photo'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setPreviewReceipt(null)}
+                    className="w-7 h-7 rounded-full bg-amber-100 dark:bg-zinc-800 text-amber-800 dark:text-zinc-200 flex items-center justify-center"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="py-3 flex-1 overflow-hidden flex items-center justify-center bg-zinc-950 rounded-2xl my-2">
+                  <img
+                    src={previewReceipt.imageUrl}
+                    alt="Receipt"
+                    className="max-h-[50vh] w-full object-contain rounded-xl"
+                  />
+                </div>
+
+                <div className="text-xs text-amber-800 dark:text-zinc-300 flex justify-between pt-2 border-t border-amber-100 dark:border-zinc-800">
+                  <span>{previewReceipt.branch?.name || "Nelliy's Coffee"}</span>
+                  <span className="font-bold">{previewReceipt.amount?.toFixed(2)} ETB</span>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
