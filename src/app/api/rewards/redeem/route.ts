@@ -6,19 +6,19 @@ import { sendSMS, smsTemplates } from '@/lib/sms'
 import { sendRewardRedeemedEmail } from '@/lib/email'
 
 const catalog: Record<string, { title: string; pointsCost: number; value: number }> = {
-  'free-espresso':   { title: 'Free Espresso',       pointsCost: 100,  value: 80 },
-  'free-cappuccino': { title: 'Free Cappuccino',      pointsCost: 150,  value: 120 },
-  'free-latte':      { title: 'Free Latte',           pointsCost: 180,  value: 150 },
-  'free-croissant':  { title: 'Free Croissant',       pointsCost: 120,  value: 100 },
-  'discount-20':     { title: '20% Off Next Order',   pointsCost: 300,  value: 0 },
-  'discount-50':     { title: '50% Off Next Order',   pointsCost: 600,  value: 0 },
-  'free-cake':       { title: 'Free Slice of Cake',   pointsCost: 250,  value: 200 },
-  'gift-card-100':   { title: '100 ETB Gift Card',    pointsCost: 800,  value: 100 },
-  'gift-card-200':   { title: '200 ETB Gift Card',    pointsCost: 1500, value: 200 },
-  'gift-card-500':   { title: '500 ETB Gift Card',    pointsCost: 3500, value: 500 },
-  'sub-weekly':      { title: 'Weekly Coffee Pass',   pointsCost: 500,  value: 560 },
-  'sub-monthly':     { title: 'Monthly Coffee Pass',  pointsCost: 1800, value: 2400 },
-  'vip-upgrade':     { title: 'VIP Day Pass',         pointsCost: 1000, value: 500 },
+  'free-espresso':   { title: 'Free Espresso',       pointsCost: 1000,  value: 80 },
+  'free-cappuccino': { title: 'Free Cappuccino',      pointsCost: 1500,  value: 120 },
+  'free-latte':      { title: 'Free Latte',           pointsCost: 1800,  value: 150 },
+  'free-croissant':  { title: 'Free Croissant',       pointsCost: 1200,  value: 100 },
+  'discount-20':     { title: '20% Off Next Order',   pointsCost: 3000,  value: 0 },
+  'discount-50':     { title: '50% Off Next Order',   pointsCost: 6000,  value: 0 },
+  'free-cake':       { title: 'Free Slice of Cake',   pointsCost: 2500,  value: 200 },
+  'gift-card-100':   { title: '100 ETB Gift Card',    pointsCost: 8000,  value: 100 },
+  'gift-card-200':   { title: '200 ETB Gift Card',    pointsCost: 15000, value: 200 },
+  'gift-card-500':   { title: '500 ETB Gift Card',    pointsCost: 35000, value: 500 },
+  'sub-weekly':      { title: 'Weekly Coffee Pass',   pointsCost: 5000,  value: 560 },
+  'sub-monthly':     { title: 'Monthly Coffee Pass',  pointsCost: 18000, value: 2400 },
+  'vip-upgrade':     { title: 'VIP Day Pass',         pointsCost: 10000, value: 500 },
 }
 
 const schema = z.object({ rewardId: z.string() })
