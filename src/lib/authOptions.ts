@@ -39,6 +39,17 @@ export const authOptions: NextAuthOptions = {
           if (!user?.password || !user.isActive) return null
           const isValid = await bcrypt.compare(credentials.password, user.password)
           if (!isValid) return null
+
+          // Transparently rehash if stored hash uses a higher cost factor than 10
+          // (cost is encoded in the hash as $2a$XX$ or $2b$XX$)
+          const TARGET_COST = 10
+          const currentCost = parseInt(user.password.split('$')[2], 10)
+          if (currentCost > TARGET_COST) {
+            bcrypt.hash(credentials.password, TARGET_COST).then(newHash => {
+              prisma.user.update({ where: { id: user.id }, data: { password: newHash } }).catch(() => {})
+            }).catch(() => {})
+          }
+
           return { id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier, points: user.points } as any
         } catch (err) {
           console.error('Auth error:', err)

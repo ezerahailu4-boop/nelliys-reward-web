@@ -4,12 +4,41 @@ import { requireAuth, calcPoints, calcTier } from '@/lib/auth'
 import { TIER_MULTIPLIER } from '@/lib/constants'
 import { rateLimit } from '@/lib/rateLimit'
 import crypto from 'crypto'
+import sharp from 'sharp'
 
 export const maxDuration = 60
 
 /**
+ * Compresses an image buffer to JPEG at a quality that keeps it under ~900KB
+ * (OCR.space free tier limit is 1MB). Also resizes if the image is very large.
+ */
+async function compressForOcr(imageBuffer: Buffer): Promise<Buffer> {
+  let img = sharp(imageBuffer)
+  const meta = await img.metadata()
+
+  // Resize if wider than 2000px to reduce file size while keeping text readable
+  const maxDim = 2000
+  if ((meta.width && meta.width > maxDim) || (meta.height && meta.height > maxDim)) {
+    img = img.resize(maxDim, maxDim, { fit: 'inside', withoutEnlargement: true })
+  }
+
+  // Convert to JPEG with progressive quality reduction until under 900KB
+  for (const quality of [80, 60, 45, 30]) {
+    const buf = await img.jpeg({ quality, mozjpeg: true }).toBuffer()
+    if (buf.length <= 900_000) return buf
+  }
+
+  // Last resort: resize smaller
+  return sharp(imageBuffer)
+    .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 40, mozjpeg: true })
+    .toBuffer()
+}
+
+/**
  * Runs OCR on an image buffer using the OCR.space API (REST).
  * Requires OCR_SPACE_API_KEY env var.
+ * Uses base64 encoding for reliable server-side uploads.
  */
 async function runVisionOcr(imageBuffer: Buffer): Promise<string> {
   const apiKey = process.env.OCR_SPACE_API_KEY
@@ -17,30 +46,42 @@ async function runVisionOcr(imageBuffer: Buffer): Promise<string> {
     throw new Error('OCR_SPACE_API_KEY is not set')
   }
 
+  // Compress the image to stay within OCR.space free tier limits
+  let compressedBuffer: Buffer
+  try {
+    compressedBuffer = await compressForOcr(imageBuffer)
+  } catch (compressErr: any) {
+    console.error('[OCR] Image compression failed:', compressErr?.message)
+    // Fall back to original buffer if compression fails
+    compressedBuffer = imageBuffer
+  }
+
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 15_000)
+  const timeout = setTimeout(() => controller.abort(), 30_000) // 30s timeout for OCR Engine 2
 
   try {
-    const form = new FormData()
+    // Use base64 encoding instead of Blob for reliable Node.js server-side uploads
+    const base64Image = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`
+
+    const form = new URLSearchParams()
     form.append('apikey', apiKey)
     form.append('language', 'eng')
     form.append('OCREngine', '2') // engine 2 = high accuracy for receipts
     form.append('scale', 'true')
     form.append('isTable', 'true')
-    form.append(
-      'file',
-      new Blob([new Uint8Array(imageBuffer)], { type: 'image/jpeg' }),
-      'receipt.jpg'
-    )
+    form.append('base64Image', base64Image)
+    form.append('filetype', 'jpg')
 
     const res = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
       signal: controller.signal,
-      body: form,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
     })
 
     if (!res.ok) {
       const body = await res.text()
+      console.error(`[OCR] API error ${res.status}:`, body.slice(0, 500))
       throw new Error(`OCR.space error ${res.status}: ${body.slice(0, 300)}`)
     }
 
@@ -48,10 +89,13 @@ async function runVisionOcr(imageBuffer: Buffer): Promise<string> {
 
     if (json.IsErroredOnProcessing) {
       const msg = Array.isArray(json.ErrorMessage) ? json.ErrorMessage.join('; ') : json.ErrorMessage
+      console.error('[OCR] Processing error:', msg)
       throw new Error(`OCR.space processing error: ${msg}`)
     }
 
-    return json?.ParsedResults?.[0]?.ParsedText ?? ''
+    const parsedText = json?.ParsedResults?.[0]?.ParsedText ?? ''
+    console.log(`[OCR] Success — extracted ${parsedText.length} chars`)
+    return parsedText
   } finally {
     clearTimeout(timeout)
   }

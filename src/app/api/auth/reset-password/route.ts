@@ -172,7 +172,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Hash new password securely
-    const hashed = await bcrypt.hash(password, 12)
+    const hashed = await bcrypt.hash(password, 10)
     await prisma.user.update({
       where: { id: user.id },
       data: { password: hashed },
