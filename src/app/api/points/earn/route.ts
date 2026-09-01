@@ -202,10 +202,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ points: pointsEarned, total: updatedUser.points, branch: branch.name, amount, multiplier, bonusPoints })
     }
 
-    // --- Branch QR scan ---
+    // --- Branch QR scan (Store check-in QR scan disabled: points are awarded based on spend via Receipt Photo Upload) ---
     const branch = await prisma.branch.findUnique({ where: { qrCode } })
-    if (!branch) return NextResponse.json({ error: 'Invalid QR code' }, { status: 404 })
+    if (branch) {
+      return NextResponse.json({
+        error: 'Store check-in scans are disabled. Please use "Upload Receipt" to earn points based on your purchase amount!',
+      }, { status: 400 })
+    }
 
+    /*
     const recentScan = await prisma.transaction.findFirst({
       where: { userId, reference: `qr:${qrCode}`, createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } },
     })
@@ -224,17 +229,9 @@ export async function POST(req: NextRequest) {
     await prisma.notification.create({
       data: { userId, type: 'points', title: 'Points Added!', message: `+${pointsEarned} points from QR scan at ${branch.name}` },
     })
+    */
 
-    const newTier = calcTier(user.points)
-    if (newTier !== user.tier) {
-      await prisma.user.update({ where: { id: userId }, data: { tier: newTier as any } })
-      notifyTierUpgrade(userId).catch(() => {})
-    } else {
-      sendSMS(user.phone, smsTemplates.pointsEarned(pointsEarned, user.points)).then((r) => { if (!r.success) console.error('[sms] send failed:', r.error) }).catch((e) => console.error('[sms] send threw:', e))
-      if (user.email) sendPointsEarnedEmail(user.email, pointsEarned, user.points, branch.name).catch(() => {})
-    }
-
-    return NextResponse.json({ points: pointsEarned, total: user.points, branch: branch.name })
+    return NextResponse.json({ error: 'Invalid QR code. Please upload your receipt photo to earn points.' }, { status: 404 })
   } catch (err: any) {
     if (err.name === 'ZodError') return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     return NextResponse.json({ error: 'Failed to process QR scan' }, { status: 500 })

@@ -60,10 +60,11 @@ export const TIER_PERKS: Record<string, string[]> = {
 // ── Points ───────────────────────────────────────────────────────────────────
 export const POINTS_PER_ETB = 30        // 1 point per 30 ETB
 export const WELCOME_BONUS = 100        // Welcome bonus: 100 points
-export const REFERRAL_BONUS = 2000      // Referral bonus: 2,000 points
-export const BIRTHDAY_BONUS = 1500      // Birthday bonus: 1,500 points
-export const REVIEW_BONUS = 500         // Google review bonus: 500 points
-export const QR_SCAN_POINTS = 500       // Store check-in QR scan: 500 points
+export const REFERRAL_BONUS = 200       // Referral bonus: 200 points
+export const BIRTHDAY_BONUS = 150       // Birthday bonus: 150 points
+export const REVIEW_BONUS = 100         // Google review bonus: 100 points
+// export const QR_SCAN_POINTS = 0      // Store check-in QR scan disabled (points earned via receipt photo upload)
+export const QR_SCAN_POINTS = 0
 
 // ── OTP ──────────────────────────────────────────────────────────────────────
 export const OTP_EXPIRY_MS = 10 * 60 * 1000   // 10 minutes

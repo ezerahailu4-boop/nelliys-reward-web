@@ -702,7 +702,7 @@ export default function HomePage() {
 
               {/* Steps */}
               <div className="flex-1">
-                <h3 className="font-display text-2xl font-bold text-amber-900 mb-4">How to earn your 500 points</h3>
+                <h3 className="font-display text-2xl font-bold text-amber-900 mb-4">How to earn your 100 points</h3>
                 <div className="space-y-3">
                   {[
                     { step: '1', text: 'Sign in to your Nelliy\'s account' },
