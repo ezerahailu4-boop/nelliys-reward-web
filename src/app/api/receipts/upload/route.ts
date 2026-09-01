@@ -103,35 +103,71 @@ async function runVisionOcr(imageBuffer: Buffer): Promise<string> {
 
 /**
  * Extracts the total monetary amount from receipt OCR text.
+ * Strictly prioritizes TOTAL / GRAND TOTAL over CASH / CHANGE lines.
  */
 function parseAmount(text: string): number {
   const lines = text.replace(/\r\n?/g, '\n').split('\n').map(l =>
     l.replace(/[\u066B\u066C]/g, '.').replace(/,(?=\d{3})/g, '').replace(/\s+/g, ' ').trim()
   ).filter(Boolean)
 
-  const exactTotal = /^\s*[*#]?\s*(?:total|grand\s*total|net\s*total|amount\s*due|cash|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb)\b/i
-  const broadTotal = /(?:total|cash|grand\s*total|net\s*total|amount\s*due|balance\s*due|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb|ETB|birr)/i
+  // Pattern that matches decimals (1400.00) and integers (1400)
+  const moneyPattern = /\b(\d+(?:\.\d{1,2})?)\b/g
 
-  const moneyPattern = /(\d+\.\d{2})\b/g
-
-  const getNum = (line: string) => {
-    const nums = Array.from(line.matchAll(moneyPattern)).map(m => parseFloat(m[1])).filter(v => v > 0)
-    return nums.length ? nums[nums.length - 1] : 0
+  const getNumbers = (line: string): number[] => {
+    // Filter out common phone/TIN/date noise unless it's explicitly a total line
+    if (/(?:tel|phone|tin|fs\s*n|fsno|date|time|\b202\d\b)/i.test(line)) {
+      if (!/total|ድምር|ጠቅላላ/i.test(line)) return []
+    }
+    return Array.from(line.matchAll(moneyPattern))
+      .map(m => parseFloat(m[1]))
+      .filter(v => !isNaN(v) && v >= 10 && v <= 50000)
   }
 
-  let best = 0
+  // Regex identifying clear total lines
+  const isExactTotal = /(?:^|\b)(?:grand\s*total|net\s*total|total\s*amount|total|amount\s*due|\u1308\u1245\u120b\u120b|\u12f5\u121d\u122d|\u12ad\u134d\u12eb)\b/i
+  
+  // Lines that should explicitly NOT be used as the bill total (cash tendered, change)
+  const isNonTotalLine = /(?:change|cash\s*tendered|tendered|\u1240\u122a|\u12dd\u122d\u12dd\u122d)/i
+
+  // 1. Look specifically for exact total lines first
   for (const line of [...lines].reverse()) {
-    const n = getNum(line)
-    if (!n) continue
-    if (exactTotal.test(line)) return n
-    if (broadTotal.test(line) && !best) best = n
+    if (isNonTotalLine.test(line) && !/total/i.test(line)) continue
+    if (isExactTotal.test(line)) {
+      const nums = getNumbers(line)
+      if (nums.length > 0) {
+        return nums[nums.length - 1]
+      }
+    }
   }
-  if (best) return best
 
-  const all = Array.from(text.matchAll(moneyPattern))
-    .map(m => parseFloat(m[1]))
-    .filter(v => v >= 20 && v <= 25000)
-  return all.length ? Math.max(...all) : 0
+  // 2. Look for broad total or ETB/birr mentions
+  const isBroadTotal = /(?:etb|birr|subtotal|balance\s*due)\b/i
+  for (const line of [...lines].reverse()) {
+    if (isNonTotalLine.test(line)) continue
+    if (isBroadTotal.test(line)) {
+      const nums = getNumbers(line)
+      if (nums.length > 0) {
+        return nums[nums.length - 1]
+      }
+    }
+  }
+
+  // 3. Fallback: find the most plausible maximum amount from candidate lines
+  const candidateAmounts: number[] = []
+  for (const line of lines) {
+    if (isNonTotalLine.test(line)) continue
+    const nums = getNumbers(line)
+    candidateAmounts.push(...nums)
+  }
+
+  if (candidateAmounts.length > 0) {
+    const reasonable = candidateAmounts.filter(v => v >= 20 && v <= 30000)
+    if (reasonable.length > 0) {
+      return Math.max(...reasonable)
+    }
+  }
+
+  return 0
 }
 
 /**
